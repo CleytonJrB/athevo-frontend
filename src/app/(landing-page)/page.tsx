@@ -3,13 +3,11 @@ import {
   BarChart3,
   Bell,
   Bolt,
-  BriefcaseBusiness,
   CalendarDays,
   Check,
   ChevronDown,
   CreditCard,
   Dumbbell,
-  Globe,
   HeartPulse,
   LayoutDashboard,
   ListChecks,
@@ -25,12 +23,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-const navigationItems = [
-  { label: "Recursos", href: "#resources" },
-  { label: "Funcionalidades", href: "#features" },
-  { label: "Planos", href: "#plans" },
-  { label: "FAQ", href: "#faq" },
-];
+import Header from "@/components/layout/header";
 
 const benefitCards = [
   {
@@ -213,40 +206,7 @@ export default function Home() {
     <main className="min-h-screen overflow-x-hidden bg-[#09090b] text-zinc-50">
       <div className="absolute inset-x-0 top-0 z-0 h-224 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.16),transparent_55%)]" />
 
-      <nav className="sticky top-0 z-50 border-b border-white/10 bg-[#09090b]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[98%] items-center justify-between px-6 py-4 lg:px-8">
-          <a href="#top" className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-yellow-300 shadow-[0_0_24px_rgba(250,204,21,0.18)]">
-              <Dumbbell className="size-5" />
-            </div>
-            <span className="text-xl font-semibold tracking-tight text-white">Athevo</span>
-          </a>
-
-          <div className="hidden items-center gap-8 md:flex">
-            <a className="border-b-2 border-yellow-400 pb-1 text-sm font-semibold text-yellow-300" href="#top">
-              Início
-            </a>
-            {navigationItems.map((item) => (
-              <a
-                key={item.href}
-                className="rounded-md px-2 py-1 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white"
-                href={item.href}
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a className="hidden text-sm text-zinc-400 transition hover:text-white sm:block" href="#">
-              Entrar
-            </a>
-            <Button className="h-10 rounded-md bg-linear-to-b from-yellow-300 to-yellow-500 px-4 font-semibold text-black hover:from-yellow-200 hover:to-yellow-400">
-              Começar grátis
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       <section id="top" className="relative mx-auto grid max-w-[98%] gap-16 px-6 pb-24 pt-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:px-8 lg:pb-32 lg:pt-28">
         <div className="relative z-10 flex flex-col items-center text-center lg:items-start lg:text-left">
@@ -336,7 +296,7 @@ export default function Home() {
                               style={{ height: `${height}%` }}
                             />
                           </div>
-                          
+
                           <span className="text-[11px] uppercase tracking-[0.16em] text-zinc-600">
                             {`D${index + 1}`}
                           </span>
@@ -435,11 +395,10 @@ export default function Home() {
           ].map(({ title, description, icon: Icon, active }) => (
             <div
               key={title}
-              className={`relative rounded-[24px] border p-8 text-center transition duration-300 hover:-translate-y-2 ${
-                active
+              className={`relative rounded-[24px] border p-8 text-center transition duration-300 hover:-translate-y-2 ${active
                   ? "border-yellow-400/40 bg-zinc-900 shadow-[0_0_30px_rgba(250,204,21,0.12)]"
                   : "border-white/8 bg-zinc-900/80"
-              }`}
+                }`}
             >
               <div
                 className={`mx-auto mb-5 flex size-16 items-center justify-center rounded-full border ${
