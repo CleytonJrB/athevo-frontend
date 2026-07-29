@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 const benefitCards = [
   {
@@ -147,40 +148,6 @@ const faqs = [
     question: "Quão seguros estão os dados dos meus alunos?",
     answer:
       "Usamos criptografia forte em trânsito e repouso, com processos compatíveis com LGPD para proteger informações sensíveis.",
-  },
-];
-
-const footerGroups = [
-  {
-    title: "Produto",
-    links: [
-      { label: "Funcionalidades", href: "#features" },
-      { label: "Planos", href: "#plans" },
-      { label: "Módulos", href: "#resources" },
-    ],
-  },
-  {
-    title: "Empresa",
-    links: [
-      { label: "Sobre nós", href: "#" },
-      { label: "Carreiras", href: "#" },
-      { label: "Blog", href: "#" },
-    ],
-  },
-  {
-    title: "Suporte",
-    links: [
-      { label: "Central de ajuda", href: "#" },
-      { label: "Fale conosco", href: "#" },
-      { label: "Status", href: "#" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Política de privacidade", href: "#" },
-      { label: "Termos de serviço", href: "#" },
-    ],
   },
 ];
 
@@ -401,11 +368,10 @@ export default function Home() {
                 }`}
             >
               <div
-                className={`mx-auto mb-5 flex size-16 items-center justify-center rounded-full border ${
-                  active
+                className={`mx-auto mb-5 flex size-16 items-center justify-center rounded-full border ${active
                     ? "border-yellow-400 bg-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.25)]"
                     : "border-white/10 bg-zinc-950 text-yellow-300"
-                }`}
+                  }`}
               >
                 <Icon className="size-7" />
               </div>
@@ -475,11 +441,10 @@ export default function Home() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-lg border p-8 transition duration-300 hover:-translate-y-2 ${
-                plan.highlighted
+              className={`relative rounded-lg border p-8 transition duration-300 hover:-translate-y-2 ${plan.highlighted
                   ? "border-yellow-400/45 bg-[#141416] shadow-[0_0_40px_rgba(250,204,21,0.14)] lg:scale-105"
                   : "border-white/8 bg-zinc-900/80"
-              }`}
+                }`}
             >
               {plan.highlighted ? (
                 <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rounded-full bg-yellow-300 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-black">
@@ -504,11 +469,10 @@ export default function Home() {
               </ul>
               <Button
                 variant={plan.highlighted ? "default" : "outline"}
-                className={`mt-8 h-12 w-full rounded-md px-4 text-sm font-semibold ${
-                  plan.highlighted
+                className={`mt-8 h-12 w-full rounded-md px-4 text-sm font-semibold ${plan.highlighted
                     ? "bg-linear-to-b from-yellow-300 to-yellow-500 text-black hover:from-yellow-200 hover:to-yellow-400"
                     : "border-zinc-800 bg-transparent text-zinc-100 hover:bg-zinc-900 hover:text-white"
-                }`}
+                  }`}
               >
                 {plan.cta}
               </Button>
@@ -553,45 +517,8 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-white/8 bg-zinc-950/90">
-        <div className="mx-auto grid max-w-[98%] gap-10 px-6 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:px-8">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-yellow-300">
-                <Dumbbell className="size-5" />
-              </div>
-              <span className="text-xl font-semibold text-white">Athevo</span>
-            </div>
-            <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-500">
-              © 2024 Athevo. Gestão precisa de fitness para academias que precisam de visibilidade operacional real.
-            </p>
-            <div className="mt-5 flex gap-4 text-zinc-500">
-              <a href="#" aria-label="Website" className="transition hover:text-yellow-300">
-                <Globe className="size-5" />
-              </a>
-              <a href="#" aria-label="Empresa" className="transition hover:text-yellow-300">
-                <BriefcaseBusiness className="size-5" />
-              </a>
-              <a href="#" aria-label="Recursos" className="transition hover:text-yellow-300">
-                <Sparkles className="size-5" />
-              </a>
-            </div>
-          </div>
+      <Footer />
 
-          {footerGroups.map((group) => (
-            <div key={group.title}>
-              <h3 className="text-sm font-semibold text-white">{group.title}</h3>
-              <div className="mt-4 space-y-3">
-                {group.links.map((link) => (
-                  <a key={link.label} href={link.href} className="block text-sm text-zinc-500 transition hover:text-yellow-300">
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </footer>
     </main>
   );
 }
