@@ -1,18 +1,15 @@
 "use client"
 
-import React, { useState, type SelectHTMLAttributes } from "react"
+import { useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useMutation } from "@tanstack/react-query"
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
   Rocket,
 } from "lucide-react"
-import { useForm, useWatch, type FieldPath } from "react-hook-form"
+import { Controller, useForm, useWatch, type FieldPath } from "react-hook-form"
 
 import { register as registerAccount } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
@@ -21,8 +18,13 @@ import {
   type RegisterFormData,
 } from "@/lib/validations/auth"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { FormCard } from "@/components/layout/form-card"
+import { PasswordToggle } from "@/components/layout/password-toggle"
+import { SearchableOptionsInput } from "@/components/layout/searchable-options-input"
+import { SelectInput } from "@/components/layout/select-input"
 import {
   Stepper,
   StepperCompletedContent,
@@ -106,6 +108,8 @@ export function RegisterForm() {
 
   const contactPhone = useWatch({ control, name: "contactPhone" })
   const document = useWatch({ control, name: "document" })
+  const areaCode = useWatch({ control, name: "areaCode" })
+  const state = useWatch({ control, name: "state" })
 
   async function goToNextStep() {
     const currentFields = fieldsByStep[step]
@@ -243,20 +247,33 @@ export function RegisterForm() {
               </Field>
 
               <Field className="md:col-span-2" data-invalid={Boolean(errors.acceptedTerms)}>
-                <label className="flex cursor-pointer items-start gap-3 text-xs leading-5 text-zinc-400">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 size-4 shrink-0 rounded border-zinc-600 bg-zinc-900 accent-yellow-400"
-                    aria-invalid={Boolean(errors.acceptedTerms)}
-                    {...register("acceptedTerms")}
-                  />
-                  <span>
-                    Eu aceito os{" "}
-                    <a href="#" className="font-medium text-yellow-400 hover:underline">Termos de Uso</a>
-                    {" "}e a{" "}
-                    <a href="#" className="font-medium text-yellow-400 hover:underline">Política de Privacidade</a>.
-                  </span>
-                </label>
+                <Controller
+                  name="acceptedTerms"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="accepted-terms"
+                        name={field.name}
+                        checked={field.value}
+                        inputRef={field.ref}
+                        className="mt-0.5 border-zinc-600 bg-zinc-900 data-checked:border-yellow-400 data-checked:bg-yellow-400 data-checked:text-black"
+                        aria-invalid={Boolean(errors.acceptedTerms)}
+                        onBlur={field.onBlur}
+                        onCheckedChange={field.onChange}
+                      />
+                      <label
+                        htmlFor="accepted-terms"
+                        className="cursor-pointer text-xs leading-5 text-zinc-400"
+                      >
+                        Eu aceito os{" "}
+                        <a href="#" className="font-medium text-yellow-400 hover:underline">Termos de Uso</a>
+                        {" "}e a{" "}
+                        <a href="#" className="font-medium text-yellow-400 hover:underline">Política de Privacidade</a>.
+                      </label>
+                    </div>
+                  )}
+                />
                 <FieldError errors={[errors.acceptedTerms]} />
               </Field>
             </FieldGroup>
@@ -350,16 +367,23 @@ export function RegisterForm() {
               <div className="grid grid-cols-[7rem_1fr] gap-4">
                 <Field data-invalid={Boolean(errors.areaCode)}>
                   <FieldLabel htmlFor="area-code">DDD</FieldLabel>
-                  <SelectInput
+                  <SearchableOptionsInput
                     id="area-code"
-                    aria-invalid={Boolean(errors.areaCode)}
-                    {...register("areaCode")}
-                  >
-                    <option value="">DDD</option>
-                    {areaCodeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </SelectInput>
+                    value={areaCode}
+                    invalid={Boolean(errors.areaCode)}
+                    options={areaCodeOptions}
+                    placeholder="DDD"
+                    inputMode="numeric"
+                    noResultsText="Nenhum DDD encontrado"
+                    normalizeValue={(value) => value.replace(/\D/g, "").slice(0, 2)}
+                    onChange={(value) => {
+                      setValue("areaCode", value, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
                   <FieldError errors={[errors.areaCode]} />
                 </Field>
 
@@ -399,17 +423,23 @@ export function RegisterForm() {
                 </Field>
 
                 <Field data-invalid={Boolean(errors.state)}>
-                  <FieldLabel htmlFor="state">Estado</FieldLabel>
-                  <SelectInput
-                    id="state"
-                    aria-invalid={Boolean(errors.state)}
-                    {...register("state")}
-                  >
-                    <option value="">Selecione...</option>
-                    {stateOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </SelectInput>
+                  <FieldLabel htmlFor="gym-state-search">Estado</FieldLabel>
+                  <SearchableOptionsInput
+                    id="gym-state-search"
+                    value={state}
+                    invalid={Boolean(errors.state)}
+                    options={stateOptions}
+                    placeholder="Buscar estado"
+                    noResultsText="Nenhum estado encontrado"
+                    normalizeValue={(value) => value.toUpperCase().slice(0, 2)}
+                    onChange={(value) => {
+                      setValue("state", value, {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
                   <FieldError errors={[errors.state]} />
                 </Field>
               </div>
@@ -502,62 +532,5 @@ export function RegisterForm() {
         </StepperCompletedContent>
       </Stepper>
     </form>
-  )
-}
-
-function FormCard({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description: string
-  children: React.ReactNode
-}) {
-
-  return (
-    <React.Fragment>
-      <div className="pointer-events-none absolute inset-0 rounded-full bg-yellow-400/5 blur-[64px]" />
-
-      <div className="relative mx-auto w-full overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-white/6 via-zinc-950/65 to-zinc-950/50 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:p-7">
-        <div className="mb-6">
-          <h2 className="text-3xl font-semibold tracking-tight text-white">{title}</h2>
-          <p className="mt-1.5 text-xs leading-5 text-zinc-500">{description}</p>
-        </div>
-        {children}
-      </div>
-    </React.Fragment>
-  )
-}
-
-function PasswordToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
-  const Icon = shown ? EyeOff : Eye
-
-  return (
-    <button
-      type="button"
-      className="cursor-pointer absolute inset-y-0 right-0 flex w-11 items-center justify-center text-zinc-500 transition hover:text-zinc-800"
-      aria-label={shown ? "Ocultar senha" : "Mostrar senha"}
-      onClick={onToggle}
-    >
-      <Icon className="size-4" />
-    </button>
-  )
-}
-
-function SelectInput({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <div className="relative">
-      <select
-        className={cn(
-          "h-11 w-full appearance-none rounded-md border border-zinc-400 bg-zinc-50 px-4 pr-10 text-sm text-zinc-900 shadow-sm outline-none transition-[border-color,box-shadow] focus:border-yellow-400 focus:ring-3 focus:ring-yellow-400/20 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </select>
-      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-zinc-500" />
-    </div>
   )
 }
