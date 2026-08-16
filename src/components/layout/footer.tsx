@@ -1,9 +1,10 @@
 import {
   BriefcaseBusiness,
-  Dumbbell,
   Globe,
   Sparkles
 } from "lucide-react";
+
+import Logo from "../icons/logo";
 
 interface FooterProps {
   simple?: boolean;
@@ -82,10 +83,7 @@ export default function Footer(props: FooterProps) {
       <div className="mx-auto grid max-w-[98%] gap-10 px-6 py-16 md:grid-cols-2 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:px-8">
         <div>
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl border border-yellow-400/30 bg-yellow-400/10 text-yellow-300">
-              <Dumbbell className="size-5" />
-            </div>
-            <span className="text-xl font-semibold text-white">Athevo</span>
+            <Logo />
           </div>
           <p className="mt-5 max-w-sm text-sm leading-7 text-zinc-500">
             © 2024 Athevo. Gestão precisa de fitness para academias que precisam de visibilidade operacional real.
