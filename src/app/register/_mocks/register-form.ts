@@ -26,7 +26,7 @@ export const areaCodeOptions = [
   71, 73, 74, 75, 77, 79,
   81, 82, 83, 84, 85, 86, 87, 88, 89,
   91, 92, 93, 94, 95, 96, 97, 98, 99,
-].map((areaCode) => ({ value: String(areaCode), label: `(${areaCode})` }))
+].map((areaCode) => ({ value: String(areaCode), label: String(areaCode) }))
 
 export const stateOptions = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT",
