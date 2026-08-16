@@ -14,7 +14,7 @@ import {
   Rocket,
   Upload,
 } from "lucide-react"
-import { useForm, type FieldPath } from "react-hook-form"
+import { useForm, useWatch, type FieldPath } from "react-hook-form"
 
 import { register as registerAccount } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
@@ -37,6 +37,7 @@ import {
   StepperTitle,
   StepperTrigger,
 } from "@/components/ui/stepper"
+import { formatDocument, formatPhone } from "@/lib/formats"
 
 const steps = ["Conta", "Academia", "Finalizar"]
 
@@ -49,7 +50,16 @@ const fieldsByStep: Array<Array<FieldPath<RegisterFormData>>> = [
     "passwordConfirmation",
     "acceptedTerms",
   ],
-  ["gymName", "gymType", "studentRange", "country", "state"],
+  [
+    "gymName",
+    "gymType",
+    "studentRange",
+    "document",
+    "areaCode",
+    "contactPhone",
+    "country",
+    "state",
+  ],
 ]
 
 const gymTypeOptions = [
@@ -67,6 +77,18 @@ const studentRangeOptions = [
   { value: "701-1500", label: "701 a 1.500 alunos" },
   { value: "more-than-1500", label: "Mais de 1.500 alunos" },
 ]
+
+const areaCodeOptions = [
+  11, 12, 13, 14, 15, 16, 17, 18, 19,
+  21, 22, 24, 27, 28,
+  31, 32, 33, 34, 35, 37, 38,
+  41, 42, 43, 44, 45, 46, 47, 48, 49,
+  51, 53, 54, 55,
+  61, 62, 63, 64, 65, 66, 67, 68, 69,
+  71, 73, 74, 75, 77, 79,
+  81, 82, 83, 84, 85, 86, 87, 88, 89,
+  91, 92, 93, 94, 95, 96, 97, 98, 99,
+].map((areaCode) => ({ value: String(areaCode), label: `(${areaCode})` }))
 
 const stateOptions = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT",
@@ -98,8 +120,9 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const {
     register,
+    control,
     handleSubmit,
-    trigger,
+    setValue,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema),
@@ -114,6 +137,9 @@ export function RegisterForm() {
       gymName: "",
       gymType: "",
       studentRange: "",
+      document: "",
+      areaCode: "",
+      contactPhone: "",
       country: "BR",
       state: "",
     },
@@ -124,11 +150,14 @@ export function RegisterForm() {
     onSuccess: () => setStep(steps.length),
   })
 
+  const contactPhone = useWatch({ control, name: "contactPhone" })
+  const document = useWatch({ control, name: "document" })
+
   async function goToNextStep() {
-    const currentFields = fieldsByStep[step]
-    if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
-      return
-    }
+    // const currentFields = fieldsByStep[step]
+    // if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
+    //   return
+    // }
 
     const nextStep = Math.min(step + 1, steps.length - 1)
     setStep(nextStep)
@@ -296,7 +325,7 @@ export function RegisterForm() {
 
         <StepperContent index={1} className="mt-7">
           <FormCard
-            title="Fale sobre sua academia"
+            title="Dados da academia"
             description="Precisamos desses dados para configurar seu painel de alto desempenho."
           >
             <FieldGroup className="gap-4">
@@ -314,7 +343,7 @@ export function RegisterForm() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Field data-invalid={Boolean(errors.gymType)}>
-                  <FieldLabel htmlFor="gym-type">Tipo de academia</FieldLabel>
+                  <FieldLabel htmlFor="gym-type">Tipo</FieldLabel>
                   <SelectInput
                     id="gym-type"
                     aria-invalid={Boolean(errors.gymType)}
@@ -341,6 +370,64 @@ export function RegisterForm() {
                     ))}
                   </SelectInput>
                   <FieldError errors={[errors.studentRange]} />
+                </Field>
+              </div>
+
+              <Field data-invalid={Boolean(errors.document)}>
+                <FieldLabel htmlFor="responsible-document">CPF/CNPJ responsável</FieldLabel>
+                <Input
+                  id="responsible-document"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                  aria-invalid={Boolean(errors.document)}
+                  {...register("document")}
+                  value={document}
+                  onChange={(event) => {
+                    setValue("document", formatDocument(event.target.value), {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }}
+                />
+                <FieldError errors={[errors.document]} />
+              </Field>
+
+              <div className="grid grid-cols-[7rem_1fr] gap-4">
+                <Field data-invalid={Boolean(errors.areaCode)}>
+                  <FieldLabel htmlFor="area-code">DDD</FieldLabel>
+                  <SelectInput
+                    id="area-code"
+                    aria-invalid={Boolean(errors.areaCode)}
+                    {...register("areaCode")}
+                  >
+                    <option value="">DDD</option>
+                    {areaCodeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </SelectInput>
+                  <FieldError errors={[errors.areaCode]} />
+                </Field>
+
+                <Field data-invalid={Boolean(errors.contactPhone)}>
+                  <FieldLabel htmlFor="contact-phone">Telefone para contato</FieldLabel>
+                  <Input
+                    id="contact-phone"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel-national"
+                    placeholder="9 0000-0000"
+                    aria-invalid={Boolean(errors.contactPhone)}
+                    {...register("contactPhone")}
+                    value={contactPhone}
+                    onChange={(event) => {
+                      setValue("contactPhone", formatPhone(event.target.value), {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  <FieldError errors={[errors.contactPhone]} />
                 </Field>
               </div>
 
