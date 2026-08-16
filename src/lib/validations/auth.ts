@@ -79,6 +79,14 @@ export const registerSchema = yup.object({
     .required("Selecione o DDD"),
   country: yup.string().required("Selecione o país"),
   state: yup.string().required("Selecione o estado"),
+  "start-work-space-type": yup
+    .string()
+    .test(
+      "valid-start-workspace-type",
+      "Selecione como deseja iniciar seu workspace",
+      (value) => ["start-from-scratch", "explore-demo"].includes(value ?? "")
+    )
+    .required("Selecione como deseja iniciar seu workspace"),
 })
 
 export type RegisterFormData = yup.InferType<typeof registerSchema>

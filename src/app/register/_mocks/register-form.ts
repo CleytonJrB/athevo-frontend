@@ -37,16 +37,20 @@ export const stateOptions = [
 export const completionCards = [
   {
     icon: Rocket,
+    value: "start-from-scratch",
     title: "Começar do zero",
     description: "Configure sua operação e cadastre sua equipe no seu ritmo.",
   },
   {
     icon: Upload,
+    value: "import-students",
     title: "Importar alunos",
     description: "Leve sua base de alunos para a Athevo de forma simples.",
+    disabled: true,
   },
   {
     icon: Dumbbell,
+    value: "explore-demo",
     title: "Explorar demonstração",
     description: "Conheça os recursos usando um ambiente já preenchido.",
   },

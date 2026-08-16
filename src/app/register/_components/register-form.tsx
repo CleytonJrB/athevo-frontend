@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { RadioGroup } from "@/components/ui/radio-group"
 import { FormCard } from "@/components/layout/form-card"
 import { PasswordToggle } from "@/components/layout/password-toggle"
 import { SearchableOptionsInput } from "@/components/layout/searchable-options-input"
+import { SelectCard } from "@/components/layout/select-card"
 import { SelectInput } from "@/components/layout/select-input"
 import {
   Stepper,
@@ -67,6 +69,7 @@ const fieldsByStep: Array<Array<FieldPath<RegisterFormData>>> = [
     "country",
     "state",
   ],
+  ["start-work-space-type"],
 ]
 
 export function RegisterForm() {
@@ -98,6 +101,7 @@ export function RegisterForm() {
       contactPhone: "",
       country: "BR",
       state: "",
+      "start-work-space-type": "",
     },
   })
 
@@ -112,10 +116,10 @@ export function RegisterForm() {
   const state = useWatch({ control, name: "state" })
 
   async function goToNextStep() {
-    const currentFields = fieldsByStep[step]
-    if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
-      return
-    }
+    // const currentFields = fieldsByStep[step]
+    // if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
+    //   return
+    // }
 
     const nextStep = Math.min(step + 1, steps.length - 1)
     setStep(nextStep)
@@ -476,20 +480,41 @@ export function RegisterForm() {
               Escolha como deseja iniciar sua jornada na Athevo. Você poderá alterar essas configurações depois.
             </p>
 
-            <div className="mt-7 grid gap-3 text-left md:grid-cols-3">
-              {completionCards.map(({ icon: Icon, title, description }) => (
-                <div
-                  key={title}
-                  className="rounded-xl border border-white/8 bg-zinc-900/70 p-5 transition hover:border-yellow-400/25 hover:bg-zinc-900"
-                >
-                  <span className="flex size-9 items-center justify-center rounded-lg bg-yellow-400/10 text-yellow-400">
-                    <Icon className="size-4.5" />
-                  </span>
-                  <h3 className="mt-4 text-sm font-semibold text-zinc-100">{title}</h3>
-                  <p className="mt-2 text-xs leading-5 text-zinc-500">{description}</p>
-                </div>
-              ))}
-            </div>
+            <Field className="mt-7" data-invalid={Boolean(errors["start-work-space-type"])}>
+              <Controller
+                name="start-work-space-type"
+                control={control}
+                render={({ field }) => (
+                  <RadioGroup
+                    name={field.name}
+                    value={field.value}
+                    inputRef={field.ref}
+                    aria-label="Como deseja iniciar seu workspace"
+                    aria-invalid={Boolean(errors["start-work-space-type"])}
+                    className="grid gap-3 text-left md:grid-cols-3"
+                    onBlur={field.onBlur}
+                    onValueChange={field.onChange}
+                  >
+                    {completionCards.map(({ icon, value, title, description, disabled }) => (
+                      <SelectCard
+                        key={value}
+                        id={`workspace-type-${value}`}
+                        value={value}
+                        icon={icon}
+                        title={title}
+                        description={description}
+                        selected={field.value === value}
+                        disabled={disabled}
+                      />
+                    ))}
+                  </RadioGroup>
+                )}
+              />
+              <FieldError
+                className="mt-3 text-center"
+                errors={[errors["start-work-space-type"]]}
+              />
+            </Field>
 
             <Button
               type="submit"
