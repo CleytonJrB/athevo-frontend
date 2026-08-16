@@ -123,6 +123,7 @@ export function RegisterForm() {
     control,
     handleSubmit,
     setValue,
+    trigger,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema),
@@ -154,10 +155,10 @@ export function RegisterForm() {
   const document = useWatch({ control, name: "document" })
 
   async function goToNextStep() {
-    // const currentFields = fieldsByStep[step]
-    // if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
-    //   return
-    // }
+    const currentFields = fieldsByStep[step]
+    if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
+      return
+    }
 
     const nextStep = Math.min(step + 1, steps.length - 1)
     setStep(nextStep)
