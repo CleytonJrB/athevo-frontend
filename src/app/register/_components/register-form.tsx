@@ -48,6 +48,8 @@ import {
   studentRangeOptions,
 } from "@/app/register/_mocks/register-form"
 
+import Logo from "@/components/icons/logo"
+
 const steps = ["Conta", "Academia", "Finalizar"]
 
 const fieldsByStep: Array<Array<FieldPath<RegisterFormData>>> = [
@@ -116,10 +118,10 @@ export function RegisterForm() {
   const state = useWatch({ control, name: "state" })
 
   async function goToNextStep() {
-    // const currentFields = fieldsByStep[step]
-    // if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
-    //   return
-    // }
+    const currentFields = fieldsByStep[step]
+    if (currentFields && !(await trigger(currentFields, { shouldFocus: true }))) {
+      return
+    }
 
     const nextStep = Math.min(step + 1, steps.length - 1)
     setStep(nextStep)
@@ -545,13 +547,11 @@ export function RegisterForm() {
 
         <StepperCompletedContent>
           <div className="mx-auto max-w-xl rounded-xl border border-emerald-400/20 bg-emerald-400/8 p-8 text-center">
-            <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-emerald-400/15 text-emerald-300">
-              <Check className="size-5" />
+            <span className="mx-auto flex size-11 items-center justify-center rounded-full">
+              <Logo />
             </span>
-            <h2 className="mt-4 text-xl font-semibold text-emerald-300">Workspace criado</h2>
-            <p className="mt-2 text-sm text-zinc-400">
-              Cadastro simulado com sucesso. A API ainda não está conectada.
-            </p>
+            <h2 className="mt-4 text-xl font-semibold text-emerald-300">Workspace criado com sucesso!</h2>
+
             <Button href="/login" className="mt-6" size="lg">Ir para o login</Button>
           </div>
         </StepperCompletedContent>

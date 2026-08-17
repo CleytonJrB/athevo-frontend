@@ -4,7 +4,7 @@ import Footer from "@/components/layout/footer"
 
 export default function RegisterPage() {
   return (
-    <CommonBody showHeader hasNavigations hiddenBackgroundBlur={true}>
+    <CommonBody hasName showHeader hasNavigations hiddenBackgroundBlur={true}>
       <section className="mx-auto flex w-full flex-1 items-center">
         <div className="w-full backdrop-blur py-8">
           <RegisterForm />
