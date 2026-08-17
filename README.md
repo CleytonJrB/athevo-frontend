@@ -16,6 +16,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Authentication
+
+The login and register flows use NextAuth Credentials with JWT sessions. Add the
+following variables to `.env.local` before running the application:
+
+```dotenv
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=replace-with-a-random-secret
+```
+
+The initial user store is kept in server memory. It is intended for local
+development only: registered users are removed whenever the server restarts.
+Replace `src/lib/auth/user-store.ts` with a database-backed repository before
+deploying the authentication flow to production.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
