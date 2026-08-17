@@ -1,14 +1,17 @@
+"use client"
+
 import Link from 'next/link';
+import { usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import Logo from '../icons/logo';
 
 const defaultNavigationItems = [
-  { label: "Início", href: "#top" },
-  { label: "Recursos", href: "#resources" },
-  { label: "Funcionalidades", href: "#features" },
-  { label: "Planos", href: "#plans" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Início", href: "/#top" },
+  { label: "Recursos", href: "/#resources" },
+  { label: "Funcionalidades", href: "/#features" },
+  { label: "Planos", href: "/#plans" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export interface NavigationItem {
@@ -26,26 +29,35 @@ export interface HeaderProps {
 
 export default function Header(props: HeaderProps) {
   const { onlyLogo = false, hasName = false, hasNavigations = false, hasButtonsAuth = true, navigationItems = defaultNavigationItems } = props;
+  const pathname = usePathname();
+  const isLoginRoute = pathname === "/login" || pathname.startsWith("/login/");
+  const isRegisterRoute = pathname === "/register" || pathname.startsWith("/register/");
 
   function renderNavigationItems(item: NavigationItem) {
     if (item.href.startsWith("#top")) {
       return (
-        <a
+        <Button
           key={item.href}
-          className="border-b-2 border-yellow-400 pb-1 text-sm font-semibold text-yellow-300"
-          href={item.href}>
+          className="text-sm font-semibold text-zinc-400 transition hover:bg-white/5 hover:text-white hover:"
+          variant="ghost"
+          size="xs"
+          href={item.href}
+        >
           {item.label}
-        </a>
+        </Button>
       )
     }
+
     return (
-      <a
+      <Button
         key={item.href}
-        className="rounded-md px-2 py-1 text-sm text-zinc-400 transition hover:bg-white/5 hover:text-white"
+        className="text-sm font-semibold text-zinc-400 transition hover:bg-white/5 hover:text-white"
+        variant="ghost"
+        size="xs"
         href={item.href}
       >
         {item.label}
-      </a>
+      </Button>
     )
   }
 
@@ -77,20 +89,27 @@ export default function Header(props: HeaderProps) {
 
           {hasButtonsAuth &&
             <div className="flex items-center gap-3">
-              <Button
-                href="/login"
-                variant="ghost"
-                className="hidden text-sm text-zinc-400 transition hover:text-white sm:flex"
-              >
+              {!isLoginRoute ? (
+                <Button
+                  href="/login"
+                  variant="outline"
+                  size="sm"
+                  className="border-[#ffecb93a] text-sm from-yellow-200 transition hover:text-white sm:flex"
+                >
                   Entrar
-              </Button>
+                </Button>
+              ) : null}
 
-              <Button
-                href="/register"
-                className="h-10 rounded-md bg-linear-to-b from-yellow-300 to-yellow-500 px-4 font-semibold text-black hover:from-yellow-200 hover:to-yellow-400"
-              >
+              {!isRegisterRoute ? (
+                <Button
+                  href="/register"
+                  variant="default"
+                  size="sm"
+                  className="rounded-md bg-linear-to-b from-yellow-300 to-yellow-500 px-4 font-semibold text-black hover:from-yellow-200 hover:to-yellow-400"
+                >
                   Começar grátis
-              </Button>
+                </Button>
+              ) : null}
             </div>
           }
         </div>
