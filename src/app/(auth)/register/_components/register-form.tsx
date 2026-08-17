@@ -46,7 +46,7 @@ import {
   gymTypeOptions,
   stateOptions,
   studentRangeOptions,
-} from "@/app/register/_mocks/register-form"
+} from "@/app/(auth)/register/_mocks/register-form"
 
 import Logo from "@/components/icons/logo"
 
@@ -539,7 +539,7 @@ export function RegisterForm() {
 
             {registerMutation.isError ? (
               <p role="alert" className="mt-4 text-sm text-destructive">
-                Não foi possível criar o workspace. Tente novamente.
+                {registerMutation.error.message}
               </p>
             ) : null}
           </div>

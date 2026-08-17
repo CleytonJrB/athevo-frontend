@@ -3,9 +3,10 @@
 import React from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useMutation } from "@tanstack/react-query"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 
-import { login } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,7 @@ export function LoginForm({
   ...props
 }: Omit<React.ComponentProps<"form">, "onSubmit">) {
   const hasCustomAuth = false
+  const router = useRouter()
 
   const {
     register,
@@ -35,11 +37,26 @@ export function LoginForm({
     resolver: yupResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   })
-  const loginMutation = useMutation({ mutationFn: login })
+  const loginMutation = useMutation({
+    mutationFn: async (data: LoginFormData) => {
+      const result = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      })
 
-  async function onSubmit(data: LoginFormData) {
-    await loginMutation.mutate(data)
-    reset()
+      if (!result?.ok) throw new Error("E-mail ou senha inválidos")
+      return result
+    },
+    onSuccess: () => {
+      reset()
+      router.replace("/")
+      router.refresh()
+    },
+  })
+
+  function onSubmit(data: LoginFormData) {
+    loginMutation.mutate(data)
   }
 
   return (
@@ -97,12 +114,7 @@ export function LoginForm({
 
         {loginMutation.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            Não foi possível entrar. Tente novamente.
-          </p>
-        ) : null}
-        {loginMutation.isSuccess ? (
-          <p role="status" className="text-sm text-emerald-400">
-            Login simulado com sucesso. A API ainda não está conectada.
+            {loginMutation.error.message}
           </p>
         ) : null}
 
