@@ -50,7 +50,7 @@ export function LoginForm({
     },
     onSuccess: () => {
       reset()
-      router.replace("/")
+      router.replace("/dashboard")
       router.refresh()
     },
   })

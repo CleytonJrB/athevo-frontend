@@ -1,7 +1,16 @@
 import type { RegisterFormData } from "@/lib/validations/auth"
 
 export interface AuthResponse {
-  user: { id: string; name: string; email: string }
+  accessToken: string
+  expiresAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+    tenantId: string
+    tenantName: string
+    role: string
+  }
 }
 
 export async function register(

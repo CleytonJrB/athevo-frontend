@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { ValidationError } from "yup"
 
-import { createUser, UserAlreadyExistsError } from "@/lib/auth/user-store"
+import { AthevoApiError, registerWithApi } from "@/lib/auth/athevo-api"
 import { registerSchema } from "@/lib/validations/auth"
 
 export async function POST(request: Request) {
@@ -11,12 +11,12 @@ export async function POST(request: Request) {
       abortEarly: false,
       stripUnknown: true,
     })
-    const user = await createUser(data)
+    const result = await registerWithApi(data)
 
-    return NextResponse.json({ user }, { status: 201 })
+    return NextResponse.json(result, { status: 201 })
   } catch (error) {
-    if (error instanceof UserAlreadyExistsError) {
-      return NextResponse.json({ error: error.message }, { status: 409 })
+    if (error instanceof AthevoApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
     }
 
     if (error instanceof ValidationError) {
