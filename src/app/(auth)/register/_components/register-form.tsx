@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useMutation } from "@tanstack/react-query"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,7 +13,6 @@ import {
 } from "lucide-react"
 import { Controller, useForm, useWatch, type FieldPath } from "react-hook-form"
 
-import { register as registerAccount } from "@/lib/api/auth"
 import { cn } from "@/lib/utils"
 import {
   registerSchema,
@@ -29,7 +30,6 @@ import { SelectCard } from "@/components/layout/select-card"
 import { SelectInput } from "@/components/layout/select-input"
 import {
   Stepper,
-  StepperCompletedContent,
   StepperContent,
   StepperIndicator,
   StepperItem,
@@ -47,8 +47,6 @@ import {
   stateOptions,
   studentRangeOptions,
 } from "@/app/(auth)/register/_mocks/register-form"
-
-import Logo from "@/components/icons/logo"
 
 const steps = ["Conta", "Academia", "Finalizar"]
 
@@ -75,6 +73,7 @@ const fieldsByStep: Array<Array<FieldPath<RegisterFormData>>> = [
 ]
 
 export function RegisterForm() {
+  const router = useRouter()
   const [step, setStep] = useState(0)
   const [maxVisitedStep, setMaxVisitedStep] = useState(0)
   const [showPassword, setShowPassword] = useState(false)
@@ -108,8 +107,26 @@ export function RegisterForm() {
   })
 
   const registerMutation = useMutation({
-    mutationFn: registerAccount,
-    onSuccess: () => setStep(steps.length),
+    mutationFn: async (data: RegisterFormData) => {
+      const result = await signIn("register", {
+        registration: JSON.stringify(data),
+        redirect: false,
+      })
+
+      if (!result?.ok) {
+        const message = result?.error === "CredentialsSignin"
+          ? "Não foi possível criar a conta. Verifique os dados e tente novamente."
+          : result?.error
+
+        throw new Error(message ?? "Não foi possível criar a conta")
+      }
+
+      return result
+    },
+    onSuccess: () => {
+      router.replace("/dashboard")
+      router.refresh()
+    },
   })
 
   const contactPhone = useWatch({ control, name: "contactPhone" })
@@ -545,16 +562,6 @@ export function RegisterForm() {
           </div>
         </StepperContent>
 
-        <StepperCompletedContent>
-          <div className="mx-auto max-w-xl rounded-xl border border-emerald-400/20 bg-emerald-400/8 p-8 text-center">
-            <span className="mx-auto flex size-11 items-center justify-center rounded-full">
-              <Logo />
-            </span>
-            <h2 className="mt-4 text-xl font-semibold text-emerald-300">Workspace criado com sucesso!</h2>
-
-            <Button href="/login" className="mt-6" size="lg">Ir para o login</Button>
-          </div>
-        </StepperCompletedContent>
       </Stepper>
     </form>
   )

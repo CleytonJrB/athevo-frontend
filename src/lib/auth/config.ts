@@ -4,11 +4,14 @@ import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
 import {
+  AthevoApiError,
   loginWithApi,
   logoutWithApi,
+  registerWithApi,
   refreshWithApi,
+  type BackendAuthResponse,
 } from "@/lib/auth/athevo-api"
-import { loginSchema } from "@/lib/validations/auth"
+import { loginSchema, registerSchema } from "@/lib/validations/auth"
 
 const refreshLocks = new Map<
   string,
@@ -24,6 +27,16 @@ async function refreshAccessToken(refreshToken: string) {
   })
   refreshLocks.set(refreshToken, request)
   return request
+}
+
+function createSessionUser(result: BackendAuthResponse) {
+  return {
+    ...result.user,
+    accessToken: result.accessToken,
+    accessTokenExpiresAt: result.expiresAt,
+    refreshToken: result.refreshToken,
+    refreshTokenExpiresAt: result.refreshTokenExpiresAt,
+  }
 }
 
 const developmentSecret = "athevo-local-development-secret"
@@ -50,14 +63,35 @@ export const authOptions: NextAuthOptions = {
 
           const result = await loginWithApi(data.email, data.password)
 
-          return {
-            ...result.user,
-            accessToken: result.accessToken,
-            accessTokenExpiresAt: result.expiresAt,
-            refreshToken: result.refreshToken,
-            refreshTokenExpiresAt: result.refreshTokenExpiresAt,
-          }
+          return createSessionUser(result)
         } catch {
+          return null
+        }
+      },
+    }),
+    CredentialsProvider({
+      id: "register",
+      name: "Criar conta",
+      credentials: {
+        registration: { label: "Cadastro", type: "text" },
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.registration) return null
+
+          const payload: unknown = JSON.parse(credentials.registration)
+          const data = await registerSchema.validate(payload, {
+            abortEarly: false,
+            stripUnknown: true,
+          })
+          const result = await registerWithApi(data)
+
+          return createSessionUser(result)
+        } catch (error) {
+          if (error instanceof AthevoApiError) {
+            throw new Error(error.message)
+          }
+
           return null
         }
       },
