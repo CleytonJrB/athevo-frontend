@@ -3,6 +3,8 @@ import type { RegisterFormData } from "@/lib/validations/auth"
 export interface AuthResponse {
   accessToken: string
   expiresAt: string
+  refreshToken: string
+  refreshTokenExpiresAt: string
   user: {
     id: string
     name: string

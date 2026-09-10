@@ -4,6 +4,7 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string
     accessTokenExpiresAt?: string
+    error?: "RefreshAccessTokenError"
     user: {
       id: string
       tenantId?: string
@@ -16,6 +17,8 @@ declare module "next-auth" {
     role?: string
     accessToken?: string
     accessTokenExpiresAt?: string
+    refreshToken?: string
+    refreshTokenExpiresAt?: string
   }
 }
 
@@ -26,5 +29,8 @@ declare module "next-auth/jwt" {
     role?: string
     accessToken?: string
     accessTokenExpiresAt?: string
+    refreshToken?: string
+    refreshTokenExpiresAt?: string
+    error?: "RefreshAccessTokenError"
   }
 }

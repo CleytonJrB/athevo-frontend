@@ -3,8 +3,28 @@ import "server-only"
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
-import { loginWithApi } from "@/lib/auth/athevo-api"
+import {
+  loginWithApi,
+  logoutWithApi,
+  refreshWithApi,
+} from "@/lib/auth/athevo-api"
 import { loginSchema } from "@/lib/validations/auth"
+
+const refreshLocks = new Map<
+  string,
+  Promise<Awaited<ReturnType<typeof refreshWithApi>>>
+>()
+
+async function refreshAccessToken(refreshToken: string) {
+  const pending = refreshLocks.get(refreshToken)
+  if (pending) return pending
+
+  const request = refreshWithApi(refreshToken).finally(() => {
+    refreshLocks.delete(refreshToken)
+  })
+  refreshLocks.set(refreshToken, request)
+  return request
+}
 
 const developmentSecret = "athevo-local-development-secret"
 
@@ -12,7 +32,7 @@ export const authOptions: NextAuthOptions = {
   secret:
     process.env.NEXTAUTH_SECRET ??
     (process.env.NODE_ENV === "development" ? developmentSecret : undefined),
-  session: { strategy: "jwt", maxAge: 60 * 60 },
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
   pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
@@ -34,6 +54,8 @@ export const authOptions: NextAuthOptions = {
             ...result.user,
             accessToken: result.accessToken,
             accessTokenExpiresAt: result.expiresAt,
+            refreshToken: result.refreshToken,
+            refreshTokenExpiresAt: result.refreshTokenExpiresAt,
           }
         } catch {
           return null
@@ -49,6 +71,29 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
         token.accessToken = user.accessToken
         token.accessTokenExpiresAt = user.accessTokenExpiresAt
+        token.refreshToken = user.refreshToken
+        token.refreshTokenExpiresAt = user.refreshTokenExpiresAt
+        token.error = undefined
+      }
+
+      const accessTokenExpiresAt = token.accessTokenExpiresAt
+        ? Date.parse(token.accessTokenExpiresAt)
+        : 0
+      const shouldRefresh =
+        Boolean(token.refreshToken) &&
+        (!accessTokenExpiresAt || accessTokenExpiresAt <= Date.now() + 30_000)
+
+      if (shouldRefresh && token.refreshToken) {
+        try {
+          const refreshed = await refreshAccessToken(token.refreshToken)
+          token.accessToken = refreshed.accessToken
+          token.accessTokenExpiresAt = refreshed.expiresAt
+          token.refreshToken = refreshed.refreshToken
+          token.refreshTokenExpiresAt = refreshed.refreshTokenExpiresAt
+          token.error = undefined
+        } catch {
+          token.error = "RefreshAccessTokenError"
+        }
       }
       return token
     },
@@ -60,7 +105,15 @@ export const authOptions: NextAuthOptions = {
       }
       session.accessToken = token.accessToken
       session.accessTokenExpiresAt = token.accessTokenExpiresAt
+      session.error = token.error
       return session
+    },
+  },
+  events: {
+    async signOut({ token }) {
+      if (token?.refreshToken && token.accessToken) {
+        await logoutWithApi(token.refreshToken, token.accessToken).catch(() => undefined)
+      }
     },
   },
 }

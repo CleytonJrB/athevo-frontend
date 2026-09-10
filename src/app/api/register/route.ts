@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     })
     const result = await registerWithApi(data)
 
-    return NextResponse.json(result, { status: 201 })
+    return NextResponse.json({ user: result.user }, { status: 201 })
   } catch (error) {
     if (error instanceof AthevoApiError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
