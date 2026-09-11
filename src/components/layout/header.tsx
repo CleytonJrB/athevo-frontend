@@ -1,5 +1,7 @@
 "use client"
 
+import { useAuth } from '@/hooks/use-auth';
+
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
 
@@ -30,6 +32,9 @@ export interface HeaderProps {
 export default function Header(props: HeaderProps) {
   const { onlyLogo = false, hasName = false, hasNavigations = false, hasButtonsAuth = true, navigationItems = defaultNavigationItems } = props;
   const pathname = usePathname();
+
+  const { isAuthenticated } = useAuth();
+
   const isLoginRoute = pathname === "/login" || pathname.startsWith("/login/");
   const isRegisterRoute = pathname === "/register" || pathname.startsWith("/register/");
 
@@ -87,7 +92,7 @@ export default function Header(props: HeaderProps) {
             </div>
           )}
 
-          {hasButtonsAuth &&
+          {hasButtonsAuth && !isAuthenticated &&
             <div className="flex items-center gap-3">
               {!isLoginRoute ? (
                 <Button
@@ -110,6 +115,19 @@ export default function Header(props: HeaderProps) {
                   Começar grátis
                 </Button>
               ) : null}
+            </div>
+          }
+
+          {isAuthenticated &&
+            <div className="flex items-center gap-3">
+              <Button
+                href="/dashboard"
+                variant="default"
+                size="sm"
+                className="rounded-md bg-linear-to-b from-yellow-300 to-yellow-500 px-4 font-semibold text-black hover:from-yellow-200 hover:to-yellow-400"
+              >
+                Dashboard
+              </Button>
             </div>
           }
         </div>
