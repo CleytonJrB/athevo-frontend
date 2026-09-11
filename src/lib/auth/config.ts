@@ -145,8 +145,8 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signOut({ token }) {
-      if (token?.refreshToken && token.accessToken) {
-        await logoutWithApi(token.refreshToken, token.accessToken).catch(() => undefined)
+      if (token?.refreshToken) {
+        await logoutWithApi(token.refreshToken).catch(() => undefined)
       }
     },
   },

@@ -111,16 +111,10 @@ export async function refreshWithApi(
   return result as BackendTokenPair
 }
 
-export async function logoutWithApi(
-  refreshToken: string,
-  accessToken: string
-) {
+export async function logoutWithApi(refreshToken: string) {
   await fetch(`${getApiUrl()}/api/auth/logout`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ refreshToken }),
     cache: "no-store",
   })
