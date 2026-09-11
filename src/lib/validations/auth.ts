@@ -84,7 +84,7 @@ export const registerSchema = yup.object({
     .test(
       "valid-start-workspace-type",
       "Selecione como deseja iniciar seu workspace",
-      (value) => ["start-from-scratch", "explore-demo"].includes(value ?? "")
+      (value) => ["start-from-scratch", "use-template"].includes(value ?? "")
     )
     .required("Selecione como deseja iniciar seu workspace"),
 })

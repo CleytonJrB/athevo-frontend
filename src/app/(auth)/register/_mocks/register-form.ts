@@ -1,19 +1,20 @@
-import { Dumbbell, Rocket, Upload } from "lucide-react"
+import { LayoutTemplate, Rocket, Upload } from "lucide-react"
 
 export const gymTypeOptions = [
   { value: "gym", label: "Academia tradicional" },
-  { value: "crossfit", label: "CrossFit / Funcional" },
+  { value: "crossfit", label: "CrossFit" },
+  { value: "functional", label: "Funcional" },
   { value: "studio", label: "Estúdio" },
   { value: "martial-arts", label: "Artes marciais" },
   { value: "other", label: "Outro" },
 ]
 
 export const studentRangeOptions = [
-  { value: "up-to-100", label: "Até 100 alunos" },
+  { value: "up-to-50", label: "Até 50 alunos" },
+  { value: "51-100", label: "51 a 100 alunos" },
   { value: "101-300", label: "101 a 300 alunos" },
   { value: "301-700", label: "301 a 700 alunos" },
-  { value: "701-1500", label: "701 a 1.500 alunos" },
-  { value: "more-than-1500", label: "Mais de 1.500 alunos" },
+  { value: "more-than-700", label: "Mais de 700 alunos" },
 ]
 
 export const areaCodeOptions = [
@@ -43,15 +44,15 @@ export const completionCards = [
   },
   {
     icon: Upload,
-    value: "import-students",
+    value: "import-data",
     title: "Importar alunos",
     description: "Leve sua base de alunos para a Athevo de forma simples.",
     disabled: true,
   },
   {
-    icon: Dumbbell,
-    value: "explore-demo",
-    title: "Explorar demonstração",
-    description: "Conheça os recursos usando um ambiente já preenchido.",
+    icon: LayoutTemplate,
+    value: "use-template",
+    title: "Usar modelo",
+    description: "Comece com uma estrutura pronta e personalize no seu ritmo.",
   },
 ]
