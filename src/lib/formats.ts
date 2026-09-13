@@ -25,3 +25,10 @@ export function formatDocument(value: string) {
   if (digits.length > 12) formatted += `-${digits.slice(12, 14)}`
   return formatted
 }
+
+export function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
