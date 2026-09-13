@@ -42,7 +42,7 @@ export function ExerciseFilters({
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Buscar exercício por nome..."
-          className="h-10 rounded-lg border-border bg-card pr-4 pl-10 text-sm text-on-surface shadow-none placeholder:text-on-surface-variant focus-visible:border-primary-container focus-visible:ring-primary-container/20"
+          className="h-10 border-border bg-card pr-4 pl-10 text-sm text-on-surface shadow-none placeholder:text-on-surface-variant focus-visible:border-primary-container focus-visible:ring-primary-container/20"
         />
       </label>
 
