@@ -58,9 +58,8 @@ const data = {
       items: [
         {
           name: "Visão Geral",
-          url: "#",
+          url: "/dashboard",
           icon: LayoutDashboard,
-          isActive: true,
         },
         {
           name: "Alunos",
@@ -79,7 +78,7 @@ const data = {
         },
         {
           name: "Exercícios",
-          url: "#",
+          url: "/dashboard/exercises",
           icon: Activity,
         },
         {

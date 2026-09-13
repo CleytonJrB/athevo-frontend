@@ -1,6 +1,9 @@
 "use client"
 
-import { type LucideIcon } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import type { LucideIcon } from "lucide-react"
+
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -9,7 +12,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { INavMenuDropDownItems, NavMenuDropDown } from "./nav-menu-dropdown"
+import {
+  NavMenuDropDown,
+  type INavMenuDropDownItems,
+} from "./nav-menu-dropdown"
 
 export function NavMenu({
   title,
@@ -25,8 +31,8 @@ export function NavMenu({
     dropdownMenus?: INavMenuDropDownItems[]
   }[]
 }) {
-
   const { isMobile } = useSidebar()
+  const pathname = usePathname()
 
   return (
     <SidebarGroup className="p-0">
@@ -36,22 +42,37 @@ export function NavMenu({
       </SidebarGroupLabel>
 
       <SidebarMenu className="gap-1">
-        {items.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton
-              render={<a href={item.url} aria-current={item.isActive ? "page" : undefined} />}
-              isActive={item.isActive}
-              tooltip={item.name}
-              className="h-10 gap-3 rounded-[6px] px-3 py-2 font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface data-active:border-l-2 data-active:border-primary-container data-active:bg-primary-container/10 data-active:font-bold data-active:text-primary-container [&_svg]:size-6 group-data-[collapsible=icon]:[&_svg]:size-4"
-            >
-              <item.icon />
+        {items.map((item) => {
+          const isCurrentRoute =
+            item.url === pathname ||
+            (item.url !== "/dashboard" && pathname.startsWith(`${item.url}/`))
+          const isActive = item.isActive ?? isCurrentRoute
 
-              <span>{item.name}</span>
-            </SidebarMenuButton>
+          return (
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton
+                render={
+                  <Link
+                    href={item.url}
+                    aria-current={isActive ? "page" : undefined}
+                  />
+                }
+                isActive={isActive}
+                tooltip={item.name}
+                className="h-10 gap-3 rounded-[6px] px-3 py-2 font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface data-active:border-l-2 data-active:border-primary-container data-active:bg-primary-container/10 data-active:font-bold data-active:text-primary-container [&_svg]:size-6 group-data-[collapsible=icon]:[&_svg]:size-4"
+              >
+                <item.icon />
 
-            <NavMenuDropDown isMobile={isMobile} items={item.dropdownMenus} />
-          </SidebarMenuItem>
-        ))}
+                <span>{item.name}</span>
+              </SidebarMenuButton>
+
+              <NavMenuDropDown
+                isMobile={isMobile}
+                items={item.dropdownMenus}
+              />
+            </SidebarMenuItem>
+          )
+        })}
       </SidebarMenu>
     </SidebarGroup>
   )

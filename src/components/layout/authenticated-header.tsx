@@ -25,15 +25,21 @@ export type AuthBreadcrumbItem = {
 // Register page labels here as authenticated routes are added.
 const routeLabels: Record<string, string> = {
   "/dashboard": "Visão Geral",
+  "/dashboard/exercises": "Exercícios",
 }
 
 function getRouteBreadcrumbs(pathname: string): AuthBreadcrumbItem[] {
   const segments = pathname.split("/").filter(Boolean)
+  const visibleSegments =
+    segments[0] === "dashboard" && segments.length > 1
+      ? segments.slice(1)
+      : segments
+  const baseSegments = segments.length === visibleSegments.length ? [] : ["dashboard"]
 
   return [
     { label: "Athevo", href: "/dashboard" },
-    ...segments.map((segment, index) => {
-      const href = `/${segments.slice(0, index + 1).join("/")}`
+    ...visibleSegments.map((segment, index) => {
+      const href = `/${[...baseSegments, ...visibleSegments.slice(0, index + 1)].join("/")}`
       const label = routeLabels[href]
 
       return {
