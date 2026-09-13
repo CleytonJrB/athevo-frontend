@@ -1,5 +1,6 @@
 import "server-only"
 
+import { getApiUrl } from "@/lib/api/api-url"
 import type { RegisterFormData } from "@/lib/validations/auth"
 
 export interface BackendAuthUser {
@@ -40,18 +41,6 @@ export class AthevoApiError extends Error {
   ) {
     super(message)
   }
-}
-
-function getApiUrl() {
-  const apiUrl =
-    process.env.ATHEVO_API_URL ??
-    (process.env.NODE_ENV === "development" ? "http://localhost:5115" : undefined)
-
-  if (!apiUrl) {
-    throw new Error("ATHEVO_API_URL is not configured")
-  }
-
-  return apiUrl.replace(/\/$/, "")
 }
 
 async function authenticate(
