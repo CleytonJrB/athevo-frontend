@@ -9,26 +9,17 @@ import {
 
 import { SidebarMenuAction } from "../ui/sidebar";
 
-import {
-  MoreHorizontal,
-  type LucideIcon,
-} from "lucide-react"
+import { MoreHorizontal } from "lucide-react"
+
+import type { DashboardMenuAction } from "@/config/dashboard-navigation"
 
 interface INavMenuDropDown {
   isMobile: boolean
-  items?: INavMenuDropDownItems[]
-}
-
-export interface INavMenuDropDownItems {
-  name: string
-  url: string
-  icon: LucideIcon
-  isActive?: boolean
-  hasSeparator?: boolean
+  items?: DashboardMenuAction[]
 }
 
 export function NavMenuDropDown({ isMobile, items = [] }: INavMenuDropDown) {
-  function renderMenuItem({ item, index }: { item: INavMenuDropDownItems, index: number }) {
+  function renderMenuItem({ item, index }: { item: DashboardMenuAction, index: number }) {
     return (
       <React.Fragment key={index}>
         <DropdownMenuItem>

@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import type { LucideIcon } from "lucide-react"
 
+import type { DashboardMenuGroup } from "@/config/dashboard-navigation"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -12,25 +12,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import {
-  NavMenuDropDown,
-  type INavMenuDropDownItems,
-} from "./nav-menu-dropdown"
+import { NavMenuDropDown } from "./nav-menu-dropdown"
 
 export function NavMenu({
   title,
   items,
-}: {
-  title: string
-  isActive?: boolean
-  items: {
-    name: string
-    url: string
-    icon: LucideIcon
-    isActive?: boolean
-    dropdownMenus?: INavMenuDropDownItems[]
-  }[]
-}) {
+}: DashboardMenuGroup) {
   const { isMobile } = useSidebar()
   const pathname = usePathname()
 

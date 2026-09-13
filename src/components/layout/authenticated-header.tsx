@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import {
+  dashboardRouteLabels,
+  implementedDashboardRoutes,
+} from "@/config/dashboard-navigation"
 import { cn } from "@/lib/utils"
 
 export type AuthBreadcrumbItem = {
@@ -22,13 +26,18 @@ export type AuthBreadcrumbItem = {
   href?: string
 }
 
-// Register page labels here as authenticated routes are added.
-const routeLabels: Record<string, string> = {
-  "/dashboard": "Visão Geral",
-  "/dashboard/exercises": "Exercícios",
-}
-
 function getRouteBreadcrumbs(pathname: string): AuthBreadcrumbItem[] {
+  if (
+    pathname.startsWith("/dashboard/") &&
+    !implementedDashboardRoutes.has(pathname)
+  ) {
+    return [
+      { label: "Athevo", href: "/dashboard" },
+      { label: "Sistema" },
+      { label: "404 Erro" },
+    ]
+  }
+
   const segments = pathname.split("/").filter(Boolean)
   const visibleSegments =
     segments[0] === "dashboard" && segments.length > 1
@@ -40,7 +49,7 @@ function getRouteBreadcrumbs(pathname: string): AuthBreadcrumbItem[] {
     { label: "Athevo", href: "/dashboard" },
     ...visibleSegments.map((segment, index) => {
       const href = `/${[...baseSegments, ...visibleSegments.slice(0, index + 1)].join("/")}`
-      const label = routeLabels[href]
+      const label = dashboardRouteLabels[href]
 
       return {
         label: label ?? segment.replace(/-/g, " "),
@@ -99,7 +108,7 @@ export function AuthenticatedHeader({
                     )}
                   >
                     {isCurrentPage ? (
-                      <BreadcrumbPage className="truncate font-medium text-on-surface" title={item.label}>
+                      <BreadcrumbPage className="truncate font-semibold text-primary-container" title={item.label}>
                         {item.label}
                       </BreadcrumbPage>
                     ) : item.href ? (
