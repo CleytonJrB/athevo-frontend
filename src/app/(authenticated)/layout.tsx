@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 
 import { authOptions } from "@/lib/auth/config"
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { AuthenticatedFooter } from "@/components/layout/authenticated-footer"
 import { AuthenticatedHeader } from "@/components/layout/authenticated-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
@@ -24,6 +25,8 @@ export default async function AuthenticatedLayout({
         <AuthenticatedHeader />
 
         {children}
+
+        <AuthenticatedFooter />
       </SidebarInset>
     </SidebarProvider>
   )

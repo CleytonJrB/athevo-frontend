@@ -12,7 +12,7 @@ export function AuthenticatedCommonBody({
   return (
     <div
       className={cn(
-        "flex min-h-[calc(100svh-4rem)] flex-1 flex-col gap-8 px-6 py-12",
+        "flex min-h-[calc(100svh-6.5rem)] flex-1 flex-col gap-8 px-6 py-12",
         className,
       )}
     >
