@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import { Providers } from "@/components/providers/providers";
+import { sessionPolicy } from "@/lib/auth/session-policy";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -30,7 +31,7 @@ export default function RootLayout({
       className={`${geist.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
+        <Providers sessionRefetchInterval={sessionPolicy.refetchIntervalSeconds}>
           {children}
         </Providers>
       </body>

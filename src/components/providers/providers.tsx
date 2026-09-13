@@ -4,10 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 
-export function Providers({ children }: { children: ReactNode }) {
+interface ProvidersProps {
+  children: ReactNode
+  sessionRefetchInterval: number
+}
+
+export function Providers({
+  children,
+  sessionRefetchInterval,
+}: ProvidersProps) {
   return (
     <TooltipProvider>
-      <AuthProvider>
+      <AuthProvider refetchInterval={sessionRefetchInterval}>
         <QueryProvider>{children}</QueryProvider>
       </AuthProvider>
     </TooltipProvider>

@@ -1,5 +1,6 @@
 import "server-only"
 
+import { createHash } from "node:crypto"
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
@@ -11,22 +12,53 @@ import {
   refreshWithApi,
   type BackendAuthResponse,
 } from "@/lib/auth/athevo-api"
+import { sessionPolicy } from "@/lib/auth/session-policy"
 import { loginSchema, registerSchema } from "@/lib/validations/auth"
 
-const refreshLocks = new Map<
-  string,
-  Promise<Awaited<ReturnType<typeof refreshWithApi>>>
->()
+interface RefreshRequest {
+  promise: Promise<Awaited<ReturnType<typeof refreshWithApi>>>
+  retainedUntil?: number
+}
+
+const refreshRequests = new Map<string, RefreshRequest>()
+const refreshResultRetentionMs = 60_000
+
+function getRefreshRequestKey(refreshToken: string) {
+  return createHash("sha256").update(refreshToken).digest("base64url")
+}
 
 async function refreshAccessToken(refreshToken: string) {
-  const pending = refreshLocks.get(refreshToken)
-  if (pending) return pending
+  const requestKey = getRefreshRequestKey(refreshToken)
+  const pending = refreshRequests.get(requestKey)
+  if (
+    pending &&
+    (!pending.retainedUntil || pending.retainedUntil > Date.now())
+  ) {
+    return pending.promise
+  }
 
-  const request = refreshWithApi(refreshToken).finally(() => {
-    refreshLocks.delete(refreshToken)
-  })
-  refreshLocks.set(refreshToken, request)
-  return request
+  refreshRequests.delete(requestKey)
+
+  const entry: RefreshRequest = {
+    promise: refreshWithApi(refreshToken),
+  }
+  refreshRequests.set(requestKey, entry)
+
+  void entry.promise.then(
+    () => {
+      entry.retainedUntil = Date.now() + refreshResultRetentionMs
+      setTimeout(() => {
+        if (refreshRequests.get(requestKey) === entry) {
+          refreshRequests.delete(requestKey)
+        }
+      }, refreshResultRetentionMs)
+    },
+    () => {
+      refreshRequests.delete(requestKey)
+    }
+  )
+
+  return entry.promise
 }
 
 function createSessionUser(result: BackendAuthResponse) {
@@ -45,7 +77,7 @@ export const authOptions: NextAuthOptions = {
   secret:
     process.env.NEXTAUTH_SECRET ??
     (process.env.NODE_ENV === "development" ? developmentSecret : undefined),
-  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 },
+  session: { strategy: "jwt", maxAge: sessionPolicy.maxAgeSeconds },
   pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
@@ -113,9 +145,23 @@ export const authOptions: NextAuthOptions = {
       const accessTokenExpiresAt = token.accessTokenExpiresAt
         ? Date.parse(token.accessTokenExpiresAt)
         : 0
+      const refreshTokenExpiresAt = token.refreshTokenExpiresAt
+        ? Date.parse(token.refreshTokenExpiresAt)
+        : 0
+
+      if (
+        token.refreshToken &&
+        (!refreshTokenExpiresAt || refreshTokenExpiresAt <= Date.now())
+      ) {
+        token.error = "RefreshAccessTokenError"
+        return token
+      }
+
       const shouldRefresh =
         Boolean(token.refreshToken) &&
-        (!accessTokenExpiresAt || accessTokenExpiresAt <= Date.now() + 30_000)
+        (!accessTokenExpiresAt ||
+          accessTokenExpiresAt <=
+            Date.now() + sessionPolicy.refreshBeforeExpirationMs)
 
       if (shouldRefresh && token.refreshToken) {
         try {

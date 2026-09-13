@@ -3,6 +3,21 @@
 import type { ReactNode } from "react"
 import { SessionProvider } from "next-auth/react"
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>
+interface AuthProviderProps {
+  children: ReactNode
+  refetchInterval: number
+}
+
+export function AuthProvider({
+  children,
+  refetchInterval,
+}: AuthProviderProps) {
+  return (
+    <SessionProvider
+      refetchInterval={refetchInterval}
+      refetchWhenOffline={false}
+    >
+      {children}
+    </SessionProvider>
+  )
 }
