@@ -29,6 +29,12 @@ export interface BackendTokenPair {
   refreshTokenExpiresAt: string
 }
 
+export interface BackendSwitchTenantResponse extends BackendTokenPair {
+  tenantId: string
+  tenantName: string
+  role: string
+}
+
 interface ProblemDetails {
   detail?: string
   title?: string
@@ -107,4 +113,32 @@ export async function logoutWithApi(refreshToken: string) {
     body: JSON.stringify({ refreshToken }),
     cache: "no-store",
   })
+}
+
+export async function switchTenantWithApi(
+  accessToken: string,
+  tenantId: string
+): Promise<BackendSwitchTenantResponse> {
+  const response = await fetch(`${getApiUrl()}/api/auth/switch-tenant`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ tenantId }),
+    cache: "no-store",
+  })
+  const result = (await response.json().catch(() => ({}))) as
+    | BackendSwitchTenantResponse
+    | ProblemDetails
+
+  if (!response.ok) {
+    const problem = result as ProblemDetails
+    throw new AthevoApiError(
+      response.status,
+      problem.detail ?? problem.title ?? "Nao foi possivel trocar de academia"
+    )
+  }
+
+  return result as BackendSwitchTenantResponse
 }

@@ -10,6 +10,7 @@ import {
   logoutWithApi,
   registerWithApi,
   refreshWithApi,
+  switchTenantWithApi,
   type BackendAuthResponse,
 } from "@/lib/auth/athevo-api"
 import { sessionPolicy } from "@/lib/auth/session-policy"
@@ -71,6 +72,20 @@ function createSessionUser(result: BackendAuthResponse) {
   }
 }
 
+function readTenantIdFromSessionUpdate(session: unknown) {
+  if (!session || typeof session !== "object" || !("tenantId" in session)) {
+    return null
+  }
+
+  const tenantId = session.tenantId
+  return typeof tenantId === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      tenantId
+    )
+    ? tenantId
+    : null
+}
+
 const developmentSecret = "athevo-local-development-secret"
 
 export const authOptions: NextAuthOptions = {
@@ -130,10 +145,11 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.tenantId = user.tenantId
+        token.tenantName = user.tenantName
         token.role = user.role
         token.accessToken = user.accessToken
         token.accessTokenExpiresAt = user.accessTokenExpiresAt
@@ -175,12 +191,47 @@ export const authOptions: NextAuthOptions = {
           token.error = "RefreshAccessTokenError"
         }
       }
+
+      if (trigger === "update") {
+        const tenantId = readTenantIdFromSessionUpdate(session)
+
+        if (!tenantId || !token.accessToken) {
+          token.error = "TenantSwitchError"
+          return token
+        }
+
+        if (tenantId !== token.tenantId) {
+          try {
+            const previousRefreshToken = token.refreshToken
+            const switched = await switchTenantWithApi(token.accessToken, tenantId)
+
+            if (previousRefreshToken) {
+              await logoutWithApi(previousRefreshToken).catch(() => undefined)
+            }
+
+            token.tenantId = switched.tenantId
+            token.tenantName = switched.tenantName
+            token.role = switched.role
+            token.accessToken = switched.accessToken
+            token.accessTokenExpiresAt = switched.expiresAt
+            token.refreshToken = switched.refreshToken
+            token.refreshTokenExpiresAt = switched.refreshTokenExpiresAt
+            token.error = undefined
+          } catch {
+            token.error = "TenantSwitchError"
+          }
+        } else {
+          token.error = undefined
+        }
+      }
+
       return token
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id
         session.user.tenantId = token.tenantId
+        session.user.tenantName = token.tenantName
         session.user.role = token.role
       }
       session.accessToken = token.accessToken

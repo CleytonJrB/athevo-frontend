@@ -4,16 +4,18 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string
     accessTokenExpiresAt?: string
-    error?: "RefreshAccessTokenError"
+    error?: "RefreshAccessTokenError" | "TenantSwitchError"
     user: {
       id: string
       tenantId?: string
+      tenantName?: string
       role?: string
     } & DefaultSession["user"]
   }
 
   interface User {
     tenantId?: string
+    tenantName?: string
     role?: string
     accessToken?: string
     accessTokenExpiresAt?: string
@@ -26,11 +28,12 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string
     tenantId?: string
+    tenantName?: string
     role?: string
     accessToken?: string
     accessTokenExpiresAt?: string
     refreshToken?: string
     refreshTokenExpiresAt?: string
-    error?: "RefreshAccessTokenError"
+    error?: "RefreshAccessTokenError" | "TenantSwitchError"
   }
 }
