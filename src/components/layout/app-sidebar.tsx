@@ -2,12 +2,6 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  Command,
-  Dumbbell,
-} from "lucide-react"
-
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -18,33 +12,15 @@ import {
 import { cn } from "@/lib/utils"
 import { dashboardNavigation } from "@/config/dashboard-navigation"
 
-import { TeamSwitcher } from "./team-switcher"
+import { AcademySwitcher } from "./academy-switcher"
 import { NavMenu } from "./nav-menu"
 import { NavUser } from "./nav-user"
-
-const teams = [
-  {
-    name: "Athevo Fitness Center",
-    logo: Dumbbell,
-    plan: "Enterprise",
-  },
-  {
-    name: "Acme Corp.",
-    logo: AudioWaveform,
-    plan: "Startup",
-  },
-  {
-    name: "Evil Corp.",
-    logo: Command,
-    plan: "Free",
-  },
-]
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" className={cn("border-outline-variant", className)} {...props}>
       <SidebarHeader className="mb-8 px-4 pt-6 pb-0 group-data-[collapsible=icon]:px-2">
-        <TeamSwitcher teams={teams} />
+        <AcademySwitcher />
       </SidebarHeader>
 
       <SidebarContent className="gap-6 px-4 pb-4 group-data-[collapsible=icon]:px-2">
