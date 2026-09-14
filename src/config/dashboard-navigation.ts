@@ -1,13 +1,17 @@
 import {
   Activity,
+  BadgeCheck,
   Banknote,
+  Bell,
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardList,
+  CreditCard,
   Dumbbell,
   LayoutDashboard,
   Settings,
   ShieldCheck,
+  Sparkles,
   UserRound,
   UserRoundCheck,
   Users,
@@ -94,3 +98,31 @@ export const implementedDashboardRoutes = new Set(
     group.items.filter((item) => item.implemented).map((item) => item.url),
   ),
 )
+
+export const userMenu: DashboardMenuAction[] = [
+  {
+    name: "Upgrade to Pro",
+    url: "#",
+    icon: Sparkles,
+    hasSeparator: true,
+    isActive: false,
+  },
+  {
+    name: "Account",
+    url: "#",
+    icon: BadgeCheck,
+    isActive: false,
+  },
+  {
+    name: "Billing",
+    url: "#",
+    icon: CreditCard,
+    isActive: false,
+  },
+  {
+    name: "Notifications",
+    url: "#",
+    icon: Bell,
+    isActive: false,
+  },
+]

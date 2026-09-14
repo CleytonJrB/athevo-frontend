@@ -1,18 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { Fragment, useState } from "react"
 
-import { useAuth } from "@/hooks/use-auth"
+import { LoaderCircle, LogOut, MoreVertical } from "lucide-react"
 
 import {
-  BadgeCheck,
-  Bell,
-  MoreVertical,
-  CreditCard,
-  LoaderCircle,
-  LogOut,
-  Sparkles,
-} from "lucide-react"
+  userMenu,
+  type DashboardMenuAction,
+} from "@/config/dashboard-navigation"
+import { useAuth } from "@/hooks/use-auth"
 
 import {
   Avatar,
@@ -54,6 +50,22 @@ export function NavUser() {
     } catch {
       setIsLoggingOut(false)
     }
+  }
+
+  function renderMenus(item: DashboardMenuAction, index: number) {
+    return (
+      <Fragment key={`${item.name}-${index}`}>
+        <DropdownMenuGroup>
+          <DropdownMenuItem disabled={!item.isActive}>
+            <item.icon />
+
+            {item.name}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        {item.hasSeparator && <DropdownMenuSeparator />}
+      </Fragment>
+    )
   }
 
   return (
@@ -115,29 +127,7 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+            {userMenu.map(renderMenus)}
 
             <DropdownMenuSeparator />
 
