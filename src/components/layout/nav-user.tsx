@@ -9,6 +9,7 @@ import {
   type DashboardMenuAction,
 } from "@/config/dashboard-navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { appToast } from "@/lib/toast"
 
 import {
   Avatar,
@@ -47,8 +48,12 @@ export function NavUser() {
 
     try {
       await logout()
-    } catch {
+    } catch (error) {
       setIsLoggingOut(false)
+      appToast.error(error, {
+        fallback: "Não foi possível encerrar a sessão.",
+        title: "Falha ao sair",
+      })
     }
   }
 
