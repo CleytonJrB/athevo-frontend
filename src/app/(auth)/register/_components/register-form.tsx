@@ -40,6 +40,7 @@ import {
   StepperTrigger,
 } from "@/components/ui/stepper"
 import { formatDocument, formatPhone } from "@/lib/formats"
+import { appToast } from "@/lib/toast"
 import {
   areaCodeOptions,
   completionCards,
@@ -107,6 +108,7 @@ export function RegisterForm() {
   })
 
   const registerMutation = useMutation({
+    meta: { skipGlobalErrorToast: true },
     mutationFn: async (data: RegisterFormData) => {
       const result = await signIn("register", {
         registration: JSON.stringify(data),
@@ -124,6 +126,10 @@ export function RegisterForm() {
       return result
     },
     onSuccess: () => {
+      appToast.success(
+        "Conta criada com sucesso",
+        "Seu workspace está pronto para uso.",
+      )
       router.replace("/dashboard")
       router.refresh()
     },

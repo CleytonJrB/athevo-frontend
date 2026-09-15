@@ -38,6 +38,7 @@ export function LoginForm({
     defaultValues: { email: "", password: "" },
   })
   const loginMutation = useMutation({
+    meta: { skipGlobalErrorToast: true },
     mutationFn: async (data: LoginFormData) => {
       const result = await signIn("credentials", {
         email: data.email,
