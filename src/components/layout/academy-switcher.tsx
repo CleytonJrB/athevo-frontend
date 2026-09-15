@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { createSessionAcademy } from "@/lib/academy"
+import { appToast } from "@/lib/toast"
 import { listAcademies } from "@/services/academies-service"
 import type { AcademyListItem } from "@/types/academy"
 
@@ -31,12 +32,14 @@ export function AcademySwitcher() {
   const { data: session, status, update } = useSession()
   const [open, setOpen] = React.useState(false)
   const [switchingId, setSwitchingId] = React.useState<string | null>(null)
-  const [switchError, setSwitchError] = React.useState<string | null>(null)
-  const { data: academies = [], isPending, error } = useQuery({
+  const { data: academies = [], isPending } = useQuery({
     queryKey: academiesQueryKey,
     queryFn: ({ signal }) => listAcademies(signal),
     enabled: status === "authenticated",
     staleTime: 60_000,
+    meta: {
+      errorTitle: "Não foi possível carregar as academias",
+    },
   })
 
   const activeAcademy =
@@ -51,30 +54,30 @@ export function AcademySwitcher() {
   async function switchAcademy(academy: AcademyListItem) {
     if (academy.id === activeAcademy?.id || switchingId) return
 
-    setSwitchError(null)
     setSwitchingId(academy.id)
 
     try {
       const updatedSession = await update({ tenantId: academy.id })
       if (!updatedSession || updatedSession.error === "TenantSwitchError") {
-        throw new Error("Nao foi possivel trocar de academia")
+        throw new Error("Não foi possível trocar de academia")
       }
 
       await queryClient.invalidateQueries({ queryKey: academiesQueryKey })
       setOpen(false)
+      appToast.success(
+        "Academia alterada",
+        `${academy.name} agora é a academia ativa.`,
+      )
       router.refresh()
     } catch (switchTenantError) {
-      setSwitchError(
-        switchTenantError instanceof Error
-          ? switchTenantError.message
-          : "Nao foi possivel trocar de academia"
-      )
+      appToast.error(switchTenantError, {
+        fallback: "Não foi possível trocar de academia.",
+        title: "Falha ao alterar academia",
+      })
     } finally {
       setSwitchingId(null)
     }
   }
-
-  const feedback = switchError ?? error?.message
 
   return (
     <SidebarMenu>
@@ -103,7 +106,6 @@ export function AcademySwitcher() {
             academies={academies}
             activeAcademyId={activeAcademy?.id}
             switchingId={switchingId}
-            feedback={feedback}
             onClose={() => setOpen(false)}
             onSelect={switchAcademy}
           />

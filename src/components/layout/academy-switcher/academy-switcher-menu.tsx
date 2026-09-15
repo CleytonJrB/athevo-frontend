@@ -21,7 +21,6 @@ interface AcademySwitcherMenuProps {
   academies: AcademyListItem[]
   activeAcademyId?: string
   switchingId: string | null
-  feedback?: string | null
   onClose: () => void
   onSelect: (academy: AcademyListItem) => void
 }
@@ -30,7 +29,6 @@ export function AcademySwitcherMenu({
   academies,
   activeAcademyId,
   switchingId,
-  feedback,
   onClose,
   onSelect,
 }: AcademySwitcherMenuProps) {
@@ -100,15 +98,6 @@ export function AcademySwitcherMenu({
           </p>
         )}
       </DropdownMenuGroup>
-
-      {feedback && (
-        <div
-          className="border-t border-outline-variant/40 px-3 py-2 text-xs text-destructive"
-          role="alert"
-        >
-          {feedback}
-        </div>
-      )}
 
       <AcademySwitcherActions onAction={onClose} />
     </DropdownMenuContent>
