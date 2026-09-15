@@ -1,8 +1,9 @@
 import type { ReactNode } from "react"
 
+import { AuthProvider } from "@/components/providers/auth-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
+import { Toaster } from "@/components/ui/toast"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { QueryProvider } from "@/components/providers/query-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
 
 interface ProvidersProps {
   children: ReactNode
@@ -18,6 +19,7 @@ export function Providers({
       <AuthProvider refetchInterval={sessionRefetchInterval}>
         <QueryProvider>{children}</QueryProvider>
       </AuthProvider>
+      <Toaster limit={3} timeout={5_000} />
     </TooltipProvider>
   )
 }
