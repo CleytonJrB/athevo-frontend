@@ -21,7 +21,7 @@ export default function LogoSimple({
       alt={alt}
       width={width}
       height={height}
-      className={cn("object-contain", className)}
+      className={cn("h-auto w-auto object-contain", className)}
     />
   )
 }
