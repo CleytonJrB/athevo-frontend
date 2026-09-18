@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   ArrowRight,
   BarChart3,
@@ -26,6 +27,17 @@ import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/footer";
 import CommonBody from "@/components/layout/common-body";
 import ExempAthevo from "@/components/layout/exemp-athevo";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: siteConfig.title,
+  },
+  description: siteConfig.description,
+  alternates: {
+    canonical: "/",
+  },
+};
 
 const benefitCards = [
   {

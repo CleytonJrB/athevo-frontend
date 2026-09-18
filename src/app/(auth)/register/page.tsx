@@ -1,6 +1,13 @@
+import type { Metadata } from "next"
+
 import CommonBody from "@/components/layout/common-body"
 import { RegisterForm } from "./_components/register-form"
 import Footer from "@/components/layout/footer"
+
+export const metadata: Metadata = {
+  title: "Criar conta",
+  description: "Crie sua conta e comece a gerenciar sua academia com a Athevo.",
+}
 
 export default function RegisterPage() {
   return (

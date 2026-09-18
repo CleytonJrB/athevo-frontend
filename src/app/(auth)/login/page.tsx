@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LoginForm } from "./_components/login-form";
@@ -5,6 +6,11 @@ import { LoginForm } from "./_components/login-form";
 import CommonBody from "@/components/layout/common-body";
 import Logo from "@/components/icons/logo";
 import ExempAthevo from "@/components/layout/exemp-athevo";
+
+export const metadata: Metadata = {
+  title: "Entrar",
+  description: "Acesse sua conta e gerencie sua academia com a Athevo.",
+};
 
 export default function LoginPage() {
   return (
