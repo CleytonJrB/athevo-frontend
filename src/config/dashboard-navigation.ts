@@ -57,7 +57,12 @@ export const dashboardNavigation: DashboardMenuGroup[] = [
         icon: Users,
         implemented: true,
       },
-      { name: "Professores", url: "/dashboard/trainers", icon: UserRound },
+      {
+        name: "Professores",
+        url: "/dashboard/trainers",
+        icon: UserRound,
+        implemented: true,
+      },
       { name: "Treinos", url: "/dashboard/workouts", icon: Dumbbell },
       {
         name: "Exercícios",
