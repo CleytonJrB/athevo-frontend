@@ -8,11 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-
-import type { Student, StudentStatus } from "../_data/students"
+import type { Student, StudentStatus } from "@/types/student"
 
 interface StudentsTableProps {
+  loading?: boolean
   students: Student[]
   onEdit: (student: Student) => void
   onView: (student: Student) => void
@@ -27,18 +28,20 @@ const statusPresentation: Record<
     className: "border-success/20 bg-success/10 text-success",
     dotClassName: "bg-success",
   },
-  pending: {
-    label: "Pendente",
-    className:
-      "border-primary-container/20 bg-primary-container/10 text-primary-container",
-    dotClassName: "bg-primary-container",
-  },
-  delinquent: {
-    label: "Inadimplente",
-    className: "border-destructive/20 bg-destructive/10 text-destructive",
-    dotClassName: "bg-destructive",
+  inactive: {
+    label: "Inativo",
+    className: "border-outline-variant bg-surface-container text-on-surface-variant",
+    dotClassName: "bg-on-surface-variant",
   },
 }
+
+const checkInFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  month: "short",
+  year: "numeric",
+})
 
 function getInitials(name: string) {
   return name
@@ -49,10 +52,43 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-export function StudentsTable({ students, onEdit, onView }: StudentsTableProps) {
+function StudentsTableSkeleton() {
+  return Array.from({ length: 5 }, (_, index) => (
+    <tr key={index} className="border-b border-border last:border-0">
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-3 w-48" />
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <Skeleton className="h-4 w-24" />
+      </td>
+      <td className="px-6 py-4">
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </td>
+      <td className="px-6 py-4">
+        <Skeleton className="h-4 w-24" />
+      </td>
+      <td className="px-6 py-4">
+        <Skeleton className="ml-auto size-8" />
+      </td>
+    </tr>
+  ))
+}
+
+export function StudentsTable({
+  loading = false,
+  students,
+  onEdit,
+  onView,
+}: StudentsTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table id="students-table" className="w-full min-w-215 border-collapse text-left">
+      <table id="students-table" className="w-full min-w-220 border-collapse text-left">
         <thead>
           <tr className="border-b border-border bg-surface">
             {[
@@ -77,18 +113,11 @@ export function StudentsTable({ students, onEdit, onView }: StudentsTableProps) 
         </thead>
 
         <tbody className="divide-y divide-border">
-          {students.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-6 py-16 text-center">
-                <p className="font-medium text-on-surface">Nenhum aluno encontrado</p>
-                <p className="mt-1 text-sm text-on-surface-variant">
-                  Ajuste os filtros para visualizar outros resultados.
-                </p>
-              </td>
-            </tr>
+          {loading ? (
+            <StudentsTableSkeleton />
           ) : (
             students.map((student) => {
-              const status = statusPresentation[student.status]
+              const status = statusPresentation[student.active ? "active" : "inactive"]
 
               return (
                 <tr
@@ -113,7 +142,7 @@ export function StudentsTable({ students, onEdit, onView }: StudentsTableProps) 
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface">
-                    {student.plan}
+                    {student.planName ?? "—"}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -130,7 +159,9 @@ export function StudentsTable({ students, onEdit, onView }: StudentsTableProps) 
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface-variant">
-                    {student.lastCheckIn}
+                    {student.lastCheckInAt
+                      ? checkInFormatter.format(new Date(student.lastCheckInAt))
+                      : "—"}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">

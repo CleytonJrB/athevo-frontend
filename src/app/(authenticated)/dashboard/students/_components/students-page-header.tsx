@@ -2,7 +2,7 @@ import { ChevronDown, ListFilter, Plus } from "lucide-react"
 
 import { AuthenticatedCommonTitle } from "@/components/layout/authenticated-common-title"
 import { Button } from "@/components/ui/button"
-import type { StudentStatus } from "../_data/students"
+import type { StudentStatus } from "@/types/student"
 
 export type StudentStatusFilter = "all" | StudentStatus
 
@@ -28,7 +28,7 @@ export function StudentsPageHeader({
 
       <AuthenticatedCommonTitle
         title="Alunos"
-        subTitle="Gerencie os matriculados, planos e frequências."
+        subTitle="Gerencie os alunos vinculados à academia."
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -43,8 +43,7 @@ export function StudentsPageHeader({
           >
             <option value="all">Todos os status</option>
             <option value="active">Ativo</option>
-            <option value="pending">Pendente</option>
-            <option value="delinquent">Inadimplente</option>
+            <option value="inactive">Inativo</option>
           </select>
           <ChevronDown
             aria-hidden="true"

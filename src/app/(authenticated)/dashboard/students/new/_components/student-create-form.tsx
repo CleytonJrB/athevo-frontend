@@ -125,8 +125,8 @@ export function StudentCreateForm() {
 
   function onSubmit() {
     appToast.info(
-      "Cadastro validado",
-      "Os dados estão prontos. A gravação será habilitada quando a API de alunos estiver disponível.",
+      "Cadastro indisponível no momento",
+      "Não foi possível concluir o cadastro agora. Tente novamente mais tarde.",
     )
   }
 
