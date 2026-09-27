@@ -67,7 +67,6 @@ export function StudentsDirectory() {
         filtersVisible={filtersVisible}
         status={status}
         onFiltersToggle={() => setFiltersVisible((current) => !current)}
-        onNewStudent={() => showPendingAction("O cadastro de alunos")}
         onStatusChange={handleStatusChange}
       />
 

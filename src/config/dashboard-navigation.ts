@@ -96,17 +96,26 @@ export const dashboardNavigation: DashboardMenuGroup[] = [
   },
 ]
 
-export const dashboardRouteLabels: Readonly<Record<string, string>> =
-  Object.fromEntries(
+const dashboardChildRouteLabels: Readonly<Record<string, string>> = {
+  "/dashboard/students/new": "Cadastrar Novo Aluno",
+}
+
+export const dashboardRouteLabels: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(
     dashboardNavigation.flatMap((group) =>
       group.items.map((item) => [item.url, item.name]),
     ),
-  )
+  ),
+  ...dashboardChildRouteLabels,
+}
 
 export const implementedDashboardRoutes = new Set(
-  dashboardNavigation.flatMap((group) =>
-    group.items.filter((item) => item.implemented).map((item) => item.url),
-  ),
+  [
+    ...dashboardNavigation.flatMap((group) =>
+      group.items.filter((item) => item.implemented).map((item) => item.url),
+    ),
+    ...Object.keys(dashboardChildRouteLabels),
+  ],
 )
 
 export const userMenu: DashboardMenuAction[] = [

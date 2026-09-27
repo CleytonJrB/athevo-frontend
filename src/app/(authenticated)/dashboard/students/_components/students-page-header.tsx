@@ -10,7 +10,6 @@ interface StudentsPageHeaderProps {
   filtersVisible: boolean
   status: StudentStatusFilter
   onFiltersToggle: () => void
-  onNewStudent: () => void
   onStatusChange: (status: StudentStatusFilter) => void
 }
 
@@ -18,7 +17,6 @@ export function StudentsPageHeader({
   filtersVisible,
   status,
   onFiltersToggle,
-  onNewStudent,
   onStatusChange,
 }: StudentsPageHeaderProps) {
   return (
@@ -67,8 +65,7 @@ export function StudentsPageHeader({
         </Button>
 
         <Button
-          type="button"
-          onClick={onNewStudent}
+          href="/dashboard/students/new"
           className="h-10 self-start rounded-md bg-primary-container px-6 font-bold text-black hover:bg-primary-container hover:shadow-[0_0_20px_rgba(250,204,21,0.4)] md:self-auto"
         >
           <Plus aria-hidden="true" className="size-5" />
