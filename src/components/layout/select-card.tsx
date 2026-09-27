@@ -30,8 +30,8 @@ export function SelectCard({
       <RadioGroupItem
         id={id}
         value={value}
+        variant="card"
         disabled={disabled}
-        className="peer sr-only"
       />
       <span
         className={cn(
