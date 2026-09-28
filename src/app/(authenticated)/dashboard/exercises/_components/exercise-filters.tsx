@@ -1,34 +1,33 @@
-import { ListFilter, Search } from "lucide-react"
+import { Building2, Library, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-
-import { exerciseCategories } from "../_data/exercises"
+import type { ExerciseScope } from "@/types/exercise"
 
 interface ExerciseFiltersProps {
-  activeCategory: string
-  onCategoryChange: (category: string) => void
   onSearchChange: (search: string) => void
-  onToggleMore: () => void
+  onScopeChange: (scope: ExerciseScope) => void
   search: string
-  showMore: boolean
+  scope: ExerciseScope
 }
 
-const visibleCategoryCount = 6
+const scopes: Array<{
+  icon?: typeof Library
+  label: string
+  value: ExerciseScope
+}> = [
+  { label: "Todos", value: "all" },
+  { icon: Library, label: "Catálogo", value: "catalog" },
+  { icon: Building2, label: "Da academia", value: "custom" },
+]
 
 export function ExerciseFilters({
-  activeCategory,
-  onCategoryChange,
   onSearchChange,
-  onToggleMore,
+  onScopeChange,
   search,
-  showMore,
+  scope,
 }: ExerciseFiltersProps) {
-  const categories = showMore
-    ? exerciseCategories
-    : exerciseCategories.slice(0, visibleCategoryCount)
-
   return (
     <div className="mb-6 flex flex-wrap items-center gap-4">
       <label className="relative min-w-64 flex-1 md:max-w-md">
@@ -46,39 +45,32 @@ export function ExerciseFilters({
         />
       </label>
 
-      <div className="flex max-w-full gap-2 overflow-x-auto pb-2" aria-label="Filtrar por grupo muscular">
-        {categories.map((category) => {
-          const isActive = activeCategory === category
+      <div
+        className="flex max-w-full gap-1 overflow-x-auto rounded-md border border-border bg-card p-1"
+        aria-label="Filtrar por origem do exercício"
+      >
+        {scopes.map(({ icon: Icon, label, value }) => {
+          const isActive = scope === value
 
           return (
             <Button
-              key={category}
+              key={value}
               type="button"
-              variant={isActive ? "default" : "outline"}
+              variant="ghost"
               aria-pressed={isActive}
-              onClick={() => onCategoryChange(category)}
+              onClick={() => onScopeChange(value)}
               className={cn(
-                "h-8 rounded-full px-4 text-xs whitespace-nowrap",
+                "h-8 rounded px-3 text-xs whitespace-nowrap",
                 isActive
-                  ? "bg-primary-container font-semibold text-black hover:bg-primary-container/90"
-                  : "border-border bg-card text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface",
+                  ? "bg-surface-container-high font-semibold text-primary-container hover:bg-surface-container-high"
+                  : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
               )}
             >
-              {category}
+              {Icon && <Icon aria-hidden="true" />}
+              {label}
             </Button>
           )
         })}
-
-        <Button
-          type="button"
-          variant="outline"
-          aria-expanded={showMore}
-          onClick={onToggleMore}
-          className="h-8 rounded-full border-border bg-card px-4 text-xs text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
-        >
-          <ListFilter aria-hidden="true" />
-          {showMore ? "Menos" : "Mais"}
-        </Button>
       </div>
     </div>
   )

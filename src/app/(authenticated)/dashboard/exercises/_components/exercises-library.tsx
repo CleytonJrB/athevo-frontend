@@ -1,66 +1,136 @@
 "use client"
 
-import React, { useMemo, useState } from "react"
+import { useEffect, useState } from "react"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 
-import { normalizeText } from "@/lib/formats"
+import { Button } from "@/components/ui/button"
+import { DataPagination } from "@/components/ui/data-pagination"
+import { listExercises } from "@/services/exercises-service"
+import type { ExerciseScope } from "@/types/exercise"
 
-import { ExerciseCard } from "./exercise-card"
+import { ExerciseCard, ExerciseCardSkeleton } from "./exercise-card"
+import { ExerciseEmptyList } from "./exercise-empty-list"
 import { ExerciseFilters } from "./exercise-filters"
 import { ExercisesPageHeader } from "./exercises-page-header"
-import { exercises } from "../_data/exercises"
-import { ExerciseEmptyList } from "./exercise-empty-list"
+
+const pageSize = 10
 
 export function ExercisesLibrary() {
+  const { data: session, status: sessionStatus } = useSession()
   const [search, setSearch] = useState("")
-  const [activeCategory, setActiveCategory] = useState("Todos")
-  const [showMore, setShowMore] = useState(false)
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [scope, setScope] = useState<ExerciseScope>("all")
+  const [page, setPage] = useState(1)
 
-  const filteredExercises = useMemo(() => {
-    const normalizedSearch = normalizeText(search.trim())
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(search.trim())
+      setPage(1)
+    }, 300)
 
-    return exercises.filter((exercise) => {
-      const matchesCategory =
-        activeCategory === "Todos" || exercise.muscleGroup === activeCategory
-      const matchesSearch =
-        !normalizedSearch ||
-        normalizeText(`${exercise.name} ${exercise.muscleGroup} ${exercise.equipment}`).includes(
-          normalizedSearch,
-        )
+    return () => window.clearTimeout(timeout)
+  }, [search])
 
-      return matchesCategory && matchesSearch
-    })
-  }, [activeCategory, search])
+  const isCustom = scope === "all" ? undefined : scope === "custom"
+  const exercisesQuery = useQuery({
+    queryKey: [
+      "exercises",
+      session?.user.tenantId,
+      { isCustom, page, pageSize, search: debouncedSearch },
+    ],
+    queryFn: ({ signal }) =>
+      listExercises(
+        {
+          isCustom,
+          languageCode: "pt-BR",
+          page,
+          pageSize,
+          search: debouncedSearch || undefined,
+        },
+        signal,
+      ),
+    enabled: sessionStatus === "authenticated" && Boolean(session?.user.tenantId),
+    placeholderData: keepPreviousData,
+    meta: {
+      errorTitle: "Não foi possível carregar os exercícios",
+    },
+  })
 
-  function toggleMoreCategories() {
-    if (showMore && activeCategory === "Core") {
-      setActiveCategory("Todos")
-    }
-
-    setShowMore((current) => !current)
+  function handleScopeChange(nextScope: ExerciseScope) {
+    setScope(nextScope)
+    setPage(1)
   }
 
+  function clearFilters() {
+    setSearch("")
+    setDebouncedSearch("")
+    setScope("all")
+    setPage(1)
+  }
+
+  const exercises = exercisesQuery.data?.items ?? []
+  const total = exercisesQuery.data?.totalCount ?? 0
+  const isPending = sessionStatus === "loading" || exercisesQuery.isPending
+  const hasActiveFilters = scope !== "all" || debouncedSearch.length > 0
+
   return (
-    <React.Fragment>
+    <>
       <ExercisesPageHeader />
 
       <ExerciseFilters
         search={search}
-        activeCategory={activeCategory}
-        showMore={showMore}
+        scope={scope}
         onSearchChange={setSearch}
-        onCategoryChange={setActiveCategory}
-        onToggleMore={toggleMoreCategories}
+        onScopeChange={handleScopeChange}
       />
 
-      {filteredExercises.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredExercises.map((exercise) => (
-            <ExerciseCard key={exercise.id} exercise={exercise} />
-          ))}
-        </div>
-      ) : (
-        <ExerciseEmptyList />
-      )}
-    </React.Fragment>
+      <section id="exercises-list" aria-busy={exercisesQuery.isFetching}>
+        {exercisesQuery.isError ? (
+          <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-border bg-surface-glass px-6 text-center">
+            <p className="font-medium text-on-surface">
+              Não foi possível carregar os exercícios
+            </p>
+            <p className="mt-1 max-w-md text-sm text-on-surface-variant">
+              Verifique sua conexão ou tente novamente em alguns instantes.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-5 border-outline-variant bg-transparent text-on-surface hover:bg-surface-container-high"
+              onClick={() => exercisesQuery.refetch()}
+            >
+              Tentar novamente
+            </Button>
+          </div>
+        ) : !isPending && total === 0 ? (
+          <ExerciseEmptyList
+            filtered={hasActiveFilters}
+            onClearFilters={clearFilters}
+          />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {isPending
+                ? Array.from({ length: 6 }, (_, index) => (
+                    <ExerciseCardSkeleton key={index} />
+                  ))
+                : exercises.map((exercise) => (
+                    <ExerciseCard key={exercise.id} exercise={exercise} />
+                  ))}
+            </div>
+            <DataPagination
+              page={page}
+              pageSize={pageSize}
+              total={total}
+              anchorId="exercises-list"
+              itemLabel="exercícios"
+              onPageChange={setPage}
+              className="mt-6 rounded-lg border border-border"
+            />
+          </>
+        )}
+      </section>
+    </>
   )
 }
