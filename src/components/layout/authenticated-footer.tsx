@@ -1,4 +1,5 @@
 import LogoSimple from "@/components/icons/logo-simple"
+import Link from "next/link"
 
 export function AuthenticatedFooter() {
   return (
@@ -7,6 +8,9 @@ export function AuthenticatedFooter() {
         <LogoSimple width={14} height={12} className="h-3 w-auto shrink-0" />
         Athevo Gym Management Platform © 2026. Todos os direitos reservados.
       </span>
+      <Link href="/fontes-e-licencas" className="hover:text-primary-container hover:underline">
+        Fontes e licenças
+      </Link>
     </footer>
   )
 }

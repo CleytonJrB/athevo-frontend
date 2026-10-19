@@ -40,6 +40,7 @@ const footerGroups = [
     links: [
       { label: "Política de privacidade", href: "#" },
       { label: "Termos de serviço", href: "#" },
+      { label: "Fontes e licenças", href: "/fontes-e-licencas" },
     ],
   },
 ];
