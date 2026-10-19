@@ -41,6 +41,8 @@ export interface ExerciseAttribution {
   derivativeSourceUrl: string | null
   license: string
   licenseUrl: string | null
+  isModified: boolean
+  modificationNotice: string | null
   objectUrl: string | null
   title: string | null
 }

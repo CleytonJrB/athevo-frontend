@@ -1,34 +1,40 @@
-import { BicepsFlexed, Dumbbell } from "lucide-react"
+import { BicepsFlexed, Dumbbell, ExternalLink } from "lucide-react"
 
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { ExerciseListItem } from "@/types/exercise"
 
-export function ExerciseCard({ exercise }: { exercise: ExerciseListItem }) {
+interface ExerciseCardProps {
+  exercise: ExerciseListItem
+  onSelect: (exercise: ExerciseListItem) => void
+}
+
+export function ExerciseCard({ exercise, onSelect }: ExerciseCardProps) {
   const equipment = exercise.equipment.map((item) => item.name).join(", ")
   const muscles = exercise.primaryMuscles.map((item) => item.name).join(", ")
 
   return (
-    <article className="group overflow-hidden rounded-lg border border-border bg-surface-glass backdrop-blur-xl transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-outline hover:shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
-      <div className="relative flex h-48 items-center justify-center overflow-hidden border-b border-border bg-surface">
+    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface-glass backdrop-blur-xl transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-outline hover:shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
+      <div className="relative flex h-36 items-center justify-center overflow-hidden border-b border-border bg-surface">
         <Dumbbell
           aria-hidden="true"
           strokeWidth={1.35}
-          className="relative size-16 text-surface-container-highest transition-[color,transform] duration-500 group-hover:scale-110 group-hover:text-primary-container/55"
+          className="relative size-12 text-surface-container-highest transition-[color,transform] duration-500 group-hover:scale-110 group-hover:text-primary-container/55"
         />
         <span className="absolute top-3 right-3 rounded border border-border bg-card px-2 py-1 text-xs text-on-surface">
           {exercise.isCustom ? "Da academia" : "Catálogo"}
         </span>
       </div>
 
-      <div className="p-6">
-        <h2 className="truncate text-xl font-semibold text-on-surface transition-colors group-hover:text-primary-container">
+      <div className="flex flex-1 flex-col p-4">
+        <h2 className="truncate text-lg font-semibold text-on-surface transition-colors group-hover:text-primary-container">
           {exercise.name}
         </h2>
         <p className="mt-1 truncate text-xs font-medium text-primary-container">
           {exercise.category?.name ?? "Sem categoria"}
         </p>
 
-        <dl className="mt-5 space-y-3 text-sm">
+        <dl className="mt-4 space-y-2.5 text-sm">
           <div className="flex items-start gap-3">
             <Dumbbell aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-on-surface-variant" />
             <div className="min-w-0">
@@ -48,6 +54,20 @@ export function ExerciseCard({ exercise }: { exercise: ExerciseListItem }) {
             </div>
           </div>
         </dl>
+
+        <div className="mt-auto pt-4">
+          <div className="border-t border-border pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onSelect(exercise)}
+              className="h-9 w-full justify-between px-0 text-on-surface-variant hover:bg-transparent hover:text-primary-container"
+            >
+              Detalhes e créditos
+              <ExternalLink aria-hidden="true" className="size-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </article>
   )
@@ -55,15 +75,16 @@ export function ExerciseCard({ exercise }: { exercise: ExerciseListItem }) {
 
 export function ExerciseCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-surface-glass">
-      <Skeleton className="h-48 w-full rounded-none" />
-      <div className="space-y-4 p-6">
-        <Skeleton className="h-6 w-3/4" />
+    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface-glass">
+      <Skeleton className="h-36 w-full rounded-none" />
+      <div className="flex flex-1 flex-col space-y-3 p-4">
+        <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-3 w-1/3" />
         <div className="space-y-3 pt-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-4/5" />
         </div>
+        <Skeleton className="mt-auto h-9 w-full" />
       </div>
     </div>
   )

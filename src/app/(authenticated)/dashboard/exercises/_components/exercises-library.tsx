@@ -11,6 +11,7 @@ import type { ExerciseScope } from "@/types/exercise"
 
 import { ExerciseCard, ExerciseCardSkeleton } from "./exercise-card"
 import { ExerciseEmptyList } from "./exercise-empty-list"
+import { ExerciseDetailsSheet } from "./exercise-details-sheet"
 import { ExerciseFilters } from "./exercise-filters"
 import { ExercisesPageHeader } from "./exercises-page-header"
 
@@ -22,6 +23,7 @@ export function ExercisesLibrary() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [scope, setScope] = useState<ExerciseScope>("all")
   const [page, setPage] = useState(1)
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null)
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -116,7 +118,11 @@ export function ExercisesLibrary() {
                     <ExerciseCardSkeleton key={index} />
                   ))
                 : exercises.map((exercise) => (
-                    <ExerciseCard key={exercise.id} exercise={exercise} />
+                    <ExerciseCard
+                      key={exercise.id}
+                      exercise={exercise}
+                      onSelect={(item) => setSelectedExerciseId(item.id)}
+                    />
                   ))}
             </div>
             <DataPagination
@@ -131,6 +137,14 @@ export function ExercisesLibrary() {
           </>
         )}
       </section>
+
+      <ExerciseDetailsSheet
+        exerciseId={selectedExerciseId}
+        open={selectedExerciseId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedExerciseId(null)
+        }}
+      />
     </>
   )
 }

@@ -30,7 +30,7 @@ export function ExerciseEmptyList({
           type="button"
           variant="outline"
           onClick={onClearFilters}
-          className="mt-5 border-outline-variant bg-transparent text-on-surface hover:bg-surface-container-high"
+          className="mt-5 px-2 border-outline-variant bg-transparent text-on-surface hover:bg-surface-container-high"
         >
           Limpar filtros
         </Button>
