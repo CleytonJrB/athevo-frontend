@@ -1,51 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Athevo Frontend
 
-## Getting Started
+Aplicacao web da Athevo em Next.js 16, React 19 e TypeScript.
 
-First, run the development server:
+## Requisitos
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js compativel com o Next.js definido em `package.json`;
+- API `athevo-backend` configurada e acessivel;
+- variaveis locais baseadas em `.env.example`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuracao
 
-## Authentication
-
-The login and register flows use NextAuth Credentials with JWT sessions. Add the
-following variables to `.env.local` before running the application:
+Crie `.env.local` sem versiona-lo:
 
 ```dotenv
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=replace-with-a-random-secret
+NEXTAUTH_SECRET=use-um-secret-aleatorio-forte
+ATHEVO_SITE_URL=http://localhost:3000
+ATHEVO_API_URL=http://localhost:5115
+ATHEVO_AUTH_SESSION_MAX_AGE_SECONDS=2592000
+ATHEVO_AUTH_REFRESH_EARLY_SECONDS=360
+ATHEVO_AUTH_SESSION_REFETCH_SECONDS=300
 ```
 
-The initial user store is kept in server memory. It is intended for local
-development only: registered users are removed whenever the server restarts.
-Replace `src/lib/auth/user-store.ts` with a database-backed repository before
-deploying the authentication flow to production.
+`ATHEVO_API_URL` deve apontar para a API, nao para o frontend. Mantenha o frontend autorizado em
+`ATHEVO_API_ACCEPT_ORIGIN` no backend.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Execucao
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm install
+npm run dev
+```
 
-## Learn More
+Acesse `http://localhost:3000`. Para validar uma entrega:
 
-To learn more about Next.js, take a look at the following resources:
+```powershell
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Autenticacao
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+O frontend usa NextAuth Credentials com sessao JWT criptografada. Login e cadastro sao processados
+pela API; usuarios nao sao armazenados em memoria no Next.js.
 
-## Deploy on Vercel
+O access token do backend e renovado automaticamente com refresh token rotativo. O refresh token
+permanece somente no JWT server-side do NextAuth e nao e exposto por `useSession()`. Os tempos do
+frontend devem ser configurados em conjunto com a politica de tokens do backend.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Atualmente a sessao e deslizante: atividade valida renova tokens e pode manter o login alem de 30
+dias. Uma duracao absoluta ainda deve ser definida antes da producao publica.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Documentacao local
+
+O diretorio `docs/` contem referencias visuais e notas locais e esta ignorado pelo Git. Regras de
+arquitetura, operacao e prontidao para producao do backend ficam em `athevo-backend/docs/`.
