@@ -1,4 +1,4 @@
-import { ArrowRight, BadgeCheck, Edit3, MoreVertical, UserRoundCog } from "lucide-react"
+import { ArrowRight, Edit3, Mail, MoreVertical, UserRoundCog } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,9 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-
-import type { Trainer, TrainerActivity } from "../_data/trainers"
+import type { Trainer } from "@/types/trainer"
 
 interface TrainerCardProps {
   trainer: Trainer
@@ -19,16 +19,16 @@ interface TrainerCardProps {
   onView: (trainer: Trainer) => void
 }
 
-const activityDotStyles: Record<TrainerActivity, string> = {
-  "on-duty": "bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)]",
-  "in-class": "bg-primary-container shadow-[0_0_8px_rgba(250,204,21,0.6)]",
-  available: "bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)]",
-  "in-service": "bg-primary-container shadow-[0_0_8px_rgba(250,204,21,0.6)]",
-}
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+})
 
 function getInitials(name: string) {
   return name
     .split(" ")
+    .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0])
     .join("")
@@ -55,8 +55,8 @@ export function TrainerCard({
               <h2 className="truncate text-[15px] leading-tight font-semibold text-on-surface">
                 {trainer.name}
               </h2>
-              <span className="mt-0.5 inline-block max-w-full truncate rounded border border-primary-container/20 bg-primary-container/10 px-2 py-0.5 font-mono text-xs text-primary-container">
-                {trainer.specialty}
+              <span className="mt-0.5 inline-block max-w-full truncate rounded border border-primary-container/20 bg-primary-container/10 px-2 py-0.5 text-xs text-primary-container">
+                {trainer.specialty ?? "Especialidade não informada"}
               </span>
             </div>
           </div>
@@ -88,29 +88,24 @@ export function TrainerCard({
           </DropdownMenu>
         </div>
 
-        <div className="mb-3 flex min-w-0 items-center gap-1.5 border-b border-surface-container-high pb-2.5 text-xs text-on-surface-variant">
-          <BadgeCheck aria-hidden="true" className="size-4 shrink-0 text-success" />
-          <span className="shrink-0">CREF {trainer.cref}</span>
-          <span aria-hidden="true" className="shrink-0">·</span>
-          <span className="truncate" title={trainer.shift}>{trainer.shift}</span>
+        <div className="mb-3 flex min-w-0 items-center gap-2 border-b border-surface-container-high pb-3 text-xs text-on-surface-variant">
+          <Mail aria-hidden="true" className="size-4 shrink-0" />
+          <span className="truncate" title={trainer.email}>
+            {trainer.email}
+          </span>
         </div>
 
         <div className="grid auto-rows-fr grid-cols-2 gap-2.5">
-          <div className="flex min-w-0 flex-col justify-between rounded-lg border border-surface-container bg-surface-container-low p-2">
-            <p className="mb-0.5 truncate text-xs text-on-surface-variant" title={trainer.primaryMetricLabel}>
-              {trainer.primaryMetricLabel}
-            </p>
-            <p className="text-[18px] leading-tight font-semibold text-on-surface">
-              {trainer.primaryMetricValue}
+          <div className="flex min-w-0 flex-col justify-between rounded-lg border border-surface-container bg-surface-container-low p-2.5">
+            <p className="mb-1 text-xs text-on-surface-variant">Cadastro</p>
+            <p className="truncate text-sm font-semibold text-on-surface">
+              {dateFormatter.format(new Date(trainer.createdAt))}
             </p>
           </div>
-          <div className="flex min-w-0 flex-col justify-between rounded-lg border border-surface-container bg-surface-container-low p-2">
-            <p className="mb-0.5 truncate text-xs text-on-surface-variant" title="Carga horária semanal">
-              Carga horária semanal
-            </p>
-            <p className="text-[18px] leading-tight font-semibold text-on-surface">
-              {trainer.weeklyHours}h{" "}
-              <span className="text-xs font-normal text-on-surface-variant">/ sem</span>
+          <div className="flex min-w-0 flex-col justify-between rounded-lg border border-surface-container bg-surface-container-low p-2.5">
+            <p className="mb-1 text-xs text-on-surface-variant">Registro profissional</p>
+            <p className="truncate text-sm font-semibold text-on-surface">
+              {trainer.registrationNumber ?? "—"}
             </p>
           </div>
         </div>
@@ -120,10 +115,15 @@ export function TrainerCard({
         <div className="flex min-w-0 items-center gap-2">
           <span
             aria-hidden="true"
-            className={cn("size-2 shrink-0 rounded-full", activityDotStyles[trainer.activity])}
+            className={cn(
+              "size-2 shrink-0 rounded-full",
+              trainer.active
+                ? "bg-success shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+                : "bg-on-surface-variant",
+            )}
           />
           <span className="truncate text-xs font-medium text-on-surface">
-            {trainer.activityLabel}
+            {trainer.active ? "Cadastro ativo" : "Cadastro inativo"}
           </span>
         </div>
         <Button
@@ -137,5 +137,25 @@ export function TrainerCard({
         </Button>
       </div>
     </article>
+  )
+}
+
+export function TrainerCardSkeleton() {
+  return (
+    <div className="flex h-58 flex-col rounded-xl border border-surface-container-high bg-surface p-4">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-10 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-5 w-44" />
+        </div>
+      </div>
+      <Skeleton className="mt-4 h-4 w-4/5" />
+      <div className="mt-4 grid grid-cols-2 gap-2.5">
+        <Skeleton className="h-16" />
+        <Skeleton className="h-16" />
+      </div>
+      <Skeleton className="mt-auto h-7 w-full" />
+    </div>
   )
 }

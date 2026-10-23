@@ -1,4 +1,4 @@
-import { CalendarDays, Download, Dumbbell, UserPlus } from "lucide-react"
+import { CalendarDays, Download, UserPlus } from "lucide-react"
 
 import { AuthenticatedCommonTitle } from "@/components/layout/authenticated-common-title"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ export function TrainersPageHeader({
 
       <AuthenticatedCommonTitle
         title="Gestão de Professores"
-        subTitle="Acompanhe e gerencie a equipe de instrutores, especialidades e plantões da sua academia."
+        subTitle="Acompanhe e gerencie os professores vinculados à sua academia."
       />
 
       <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">

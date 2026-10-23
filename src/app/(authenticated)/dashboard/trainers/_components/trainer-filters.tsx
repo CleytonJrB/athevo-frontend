@@ -1,32 +1,28 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import type { TrainerSummary } from "@/types/trainer"
 
-export type TrainerFilter =
-  | "all"
-  | "strength"
-  | "group-classes"
-  | "functional"
-  | "personal"
-  | "on-duty"
-
-const filters: Array<{ value: TrainerFilter; label: string; count: number }> = [
-  { value: "all", label: "Todos", count: 32 },
-  { value: "strength", label: "Musculação", count: 16 },
-  { value: "group-classes", label: "Aulas Coletivas / Dança", count: 6 },
-  { value: "functional", label: "Crossfit / Funcional", count: 5 },
-  { value: "personal", label: "Personal Trainers", count: 5 },
-  { value: "on-duty", label: "Em Plantão", count: 14 },
-]
+export type TrainerFilter = "all" | "active" | "inactive"
 
 interface TrainerFiltersProps {
   activeFilter: TrainerFilter
+  loading?: boolean
   onFilterChange: (filter: TrainerFilter) => void
+  summary: TrainerSummary
 }
 
 export function TrainerFilters({
   activeFilter,
+  loading = false,
   onFilterChange,
+  summary,
 }: TrainerFiltersProps) {
+  const filters: Array<{ value: TrainerFilter; label: string; count: number }> = [
+    { value: "all", label: "Todos", count: summary.total },
+    { value: "active", label: "Ativos", count: summary.active },
+    { value: "inactive", label: "Inativos", count: summary.inactive },
+  ]
+
   return (
     <div className="max-w-full overflow-x-auto pb-1">
       <div className="flex w-max items-center gap-2" aria-label="Filtrar professores">
@@ -53,12 +49,10 @@ export function TrainerFilters({
                   "rounded-full px-1.5 py-0.5 font-mono text-[0.65rem] leading-none",
                   isActive
                     ? "bg-on-primary-container/10"
-                    : filter.value === "on-duty"
-                      ? "bg-success/20 text-success"
-                      : "bg-surface-container-highest",
+                    : "bg-surface-container-highest",
                 )}
               >
-                {filter.count}
+                {loading ? "—" : filter.count}
               </span>
             </Button>
           )
