@@ -20,6 +20,7 @@ import { Controller, useForm, useWatch } from "react-hook-form"
 import { AuthenticatedCommonTitle } from "@/components/layout/authenticated-common-title"
 import { SelectInput } from "@/components/layout/select-input"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -149,17 +150,32 @@ export function StudentCreateForm() {
 
   function onSubmit(data: StudentFormData) {
     const [firstName, ...lastNameParts] = data.fullName.trim().split(/\s+/)
+    const selectedPlan = membershipPlansQuery.data?.find((plan) => plan.id === data.plan)
+    const selectedPrice = selectedPlan?.prices[0]
+
+    if (!selectedPrice) {
+      setError("plan", {
+        message: "Selecione um plano com preço vigente",
+        type: "manual",
+      })
+      return
+    }
+
     invitationMutation.mutate({
+      autoRenew: data.autoRenew,
       birthDate: data.birthDate,
       city: data.city.trim(),
       complement: data.complement.trim() || undefined,
       district: data.district.trim(),
       document: data.cpf.replace(/\D/g, ""),
+      dueDay: data.dueDay,
       email: data.email.trim(),
       firstName,
       lastName: lastNameParts.join(" "),
+      membershipPlanPriceId: selectedPrice.id,
       number: data.number.trim(),
       phone: data.phone.replace(/\D/g, ""),
+      startDate: data.startDate,
       state: data.state.toUpperCase(),
       street: data.street.trim(),
       zipCode: data.zipCode.replace(/\D/g, ""),
@@ -610,7 +626,7 @@ export function StudentCreateForm() {
                     id="student-due-day"
                     type="number"
                     min={1}
-                    max={31}
+                    max={28}
                     placeholder="Dia"
                     className={inputClassName}
                     aria-invalid={Boolean(errors.dueDay)}
@@ -619,6 +635,22 @@ export function StudentCreateForm() {
                   <FieldError errors={[errors.dueDay]} />
                 </Field>
               </div>
+
+              <Controller
+                name="autoRenew"
+                control={control}
+                render={({ field }) => (
+                  <label className="flex cursor-pointer items-start gap-3 text-sm text-on-surface-variant">
+                    <Checkbox
+                      checked={field.value}
+                      className="mt-0.5"
+                      onBlur={field.onBlur}
+                      onCheckedChange={field.onChange}
+                    />
+                    <span>Renovar a matrícula automaticamente ao fim do período.</span>
+                  </label>
+                )}
+              />
 
               <Field data-invalid={Boolean(errors.trainer)}>
                 <FieldLabel htmlFor="student-trainer">Professor Vinculado</FieldLabel>

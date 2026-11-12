@@ -3,6 +3,7 @@ import * as yup from "yup"
 import { validarCPF } from "@/lib/utils"
 
 export interface StudentFormData {
+  autoRenew: boolean
   birthDate: string
   city: string
   complement: string
@@ -23,6 +24,7 @@ export interface StudentFormData {
 }
 
 export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
+  autoRenew: yup.boolean().defined(),
   fullName: yup
     .string()
     .trim()
@@ -78,12 +80,13 @@ export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
     .typeError("Informe o dia do vencimento")
     .integer("Informe um dia inteiro")
     .min(1, "O dia mínimo é 1")
-    .max(31, "O dia máximo é 31")
+    .max(28, "O dia máximo é 28")
     .required("O vencimento é obrigatório"),
   trainer: yup.string().required("Selecione um professor"),
 })
 
 export const studentFormDefaultValues: StudentFormData = {
+  autoRenew: true,
   birthDate: "",
   city: "",
   complement: "",

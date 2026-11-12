@@ -25,6 +25,7 @@ export interface StudentListParams {
 }
 
 export interface CreateStudentInvitationInput {
+  autoRenew: boolean
   birthDate: string
   city: string
   complement?: string
@@ -33,10 +34,13 @@ export interface CreateStudentInvitationInput {
   email: string
   firstName: string
   lastName: string
+  membershipPlanPriceId: string
   number: string
   phone: string
+  startDate: string
   state: string
   street: string
+  dueDay: number
   zipCode: string
 }
 
