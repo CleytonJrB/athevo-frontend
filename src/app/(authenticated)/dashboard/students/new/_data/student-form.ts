@@ -27,6 +27,11 @@ export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
     .string()
     .trim()
     .min(3, "Informe o nome completo")
+    .test(
+      "full-name",
+      "Informe nome e sobrenome",
+      (value) => (value?.trim().split(/\s+/).length ?? 0) >= 2,
+    )
     .required("O nome é obrigatório"),
   email: yup
     .string()

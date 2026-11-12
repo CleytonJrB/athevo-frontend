@@ -23,3 +23,36 @@ export interface StudentListParams {
   pageSize: number
   search?: string
 }
+
+export interface CreateStudentInvitationInput {
+  birthDate: string
+  city: string
+  complement?: string
+  district: string
+  document: string
+  email: string
+  firstName: string
+  lastName: string
+  number: string
+  phone: string
+  state: string
+  street: string
+  zipCode: string
+}
+
+export interface StudentInvitationRequestResult {
+  message: string
+}
+
+export interface StudentInvitationLookupResult {
+  academyName: string
+  expiresAt: string
+  requiresAccountSetup: boolean
+}
+
+export interface AcceptStudentInvitationInput {
+  acceptedTerms: boolean
+  password?: string
+  passwordConfirmation?: string
+  token: string
+}

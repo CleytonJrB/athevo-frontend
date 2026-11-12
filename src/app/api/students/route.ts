@@ -4,6 +4,10 @@ import { NextResponse } from "next/server"
 import { Api } from "@/lib/api/api"
 import { ApiError } from "@/lib/api/api-error"
 import type { StudentPage } from "@/types/student"
+import type {
+  CreateStudentInvitationInput,
+  StudentInvitationRequestResult,
+} from "@/types/student"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -30,6 +34,33 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { title: "Não foi possível carregar os alunos" },
+      { status: 500 },
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = (await request.json()) as CreateStudentInvitationInput
+    const result = await Api.post<
+      StudentInvitationRequestResult,
+      CreateStudentInvitationInput
+    >("/api/students/invitations", body)
+    return NextResponse.json(result, { status: 202 })
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json(
+        {
+          detail: error.message,
+          title: "Nao foi possivel enviar o convite",
+          traceId: error.traceId,
+        },
+        { status: error.status },
+      )
+    }
+
+    return NextResponse.json(
+      { title: "Nao foi possivel enviar o convite" },
       { status: 500 },
     )
   }

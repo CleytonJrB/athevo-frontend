@@ -1,6 +1,13 @@
 import axios, { isAxiosError } from "axios"
 
-import type { StudentListParams, StudentPage } from "@/types/student"
+import type {
+  AcceptStudentInvitationInput,
+  CreateStudentInvitationInput,
+  StudentInvitationLookupResult,
+  StudentInvitationRequestResult,
+  StudentListParams,
+  StudentPage,
+} from "@/types/student"
 
 interface ApiProblemDetails {
   detail?: string
@@ -40,4 +47,21 @@ export async function listStudents(
 
     throw error
   }
+}
+
+export async function createStudentInvitation(input: CreateStudentInvitationInput) {
+  const response = await axios.post<StudentInvitationRequestResult>("/api/students", input)
+  return response.data
+}
+
+export async function lookupStudentInvitation(token: string) {
+  const response = await axios.post<StudentInvitationLookupResult>(
+    "/api/student-invitations/lookup",
+    { token },
+  )
+  return response.data
+}
+
+export async function acceptStudentInvitation(input: AcceptStudentInvitationInput) {
+  await axios.post("/api/student-invitations/accept", input)
 }

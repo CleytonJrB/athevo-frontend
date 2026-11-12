@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useMutation } from "@tanstack/react-query"
@@ -26,6 +27,7 @@ import { formatDocument } from "@/lib/formats"
 import { appToast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { getAddressByPostalCode } from "@/services/postal-code-service"
+import { createStudentInvitation } from "@/services/students-service"
 
 import {
   planOptions,
@@ -58,6 +60,7 @@ function formatZipCode(value: string) {
 }
 
 export function StudentCreateForm() {
+  const router = useRouter()
   const photoInputRef = useRef<HTMLInputElement>(null)
   const pendingPostalCodeRef = useRef<string | null>(null)
   const [photo, setPhoto] = useState<{ dataUrl: string; name: string } | null>(null)
@@ -105,6 +108,22 @@ export function StudentCreateForm() {
     },
   })
 
+  const invitationMutation = useMutation({
+    mutationFn: createStudentInvitation,
+    meta: {
+      errorFallback: "Não foi possível enviar o convite. Tente novamente.",
+      errorTitle: "Erro ao cadastrar aluno",
+    },
+    onSuccess: () => {
+      appToast.success(
+        "Convite enviado",
+        "O aluno receberá as instruções para ativar a conta.",
+      )
+      router.push("/dashboard/students")
+      router.refresh()
+    },
+  })
+
   function searchPostalCode() {
     const digits = getValues("zipCode").replace(/\D/g, "")
 
@@ -123,11 +142,23 @@ export function StudentCreateForm() {
     postalCodeMutation.mutate(digits)
   }
 
-  function onSubmit() {
-    appToast.info(
-      "Cadastro indisponível no momento",
-      "Não foi possível concluir o cadastro agora. Tente novamente mais tarde.",
-    )
+  function onSubmit(data: StudentFormData) {
+    const [firstName, ...lastNameParts] = data.fullName.trim().split(/\s+/)
+    invitationMutation.mutate({
+      birthDate: data.birthDate,
+      city: data.city.trim(),
+      complement: data.complement.trim() || undefined,
+      district: data.district.trim(),
+      document: data.cpf.replace(/\D/g, ""),
+      email: data.email.trim(),
+      firstName,
+      lastName: lastNameParts.join(" "),
+      number: data.number.trim(),
+      phone: data.phone.replace(/\D/g, ""),
+      state: data.state.toUpperCase(),
+      street: data.street.trim(),
+      zipCode: data.zipCode.replace(/\D/g, ""),
+    })
   }
 
   function handlePhotoChange(file?: File) {
@@ -180,10 +211,15 @@ export function StudentCreateForm() {
           </Button>
           <Button
             type="submit"
+            disabled={invitationMutation.isPending}
             className="h-10 flex-1 bg-primary-container px-4 font-semibold text-black shadow-[0_4px_14px_rgba(250,204,21,0.18)] hover:bg-primary-container/90 sm:flex-none"
           >
-            <Save aria-hidden="true" />
-            Salvar Aluno
+            {invitationMutation.isPending ? (
+              <Loader2 aria-hidden="true" className="animate-spin" />
+            ) : (
+              <Save aria-hidden="true" />
+            )}
+            {invitationMutation.isPending ? "Enviando..." : "Salvar Aluno"}
           </Button>
         </div>
       </div>
