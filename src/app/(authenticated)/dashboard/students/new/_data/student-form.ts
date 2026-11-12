@@ -68,7 +68,10 @@ export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
     .trim()
     .matches(/^[A-Za-z]{2}$/, "Informe uma UF válida")
     .required("A UF é obrigatória"),
-  plan: yup.string().oneOf(["monthly", "quarterly", "annual"]).required(),
+  plan: yup
+    .string()
+    .uuid("Selecione um plano válido")
+    .required("Selecione um plano"),
   startDate: yup.string().required("A data de início é obrigatória"),
   dueDay: yup
     .number()
@@ -92,19 +95,13 @@ export const studentFormDefaultValues: StudentFormData = {
   gender: "",
   number: "",
   phone: "",
-  plan: "monthly",
+  plan: "",
   startDate: "",
   state: "",
   street: "",
   trainer: "",
   zipCode: "",
 }
-
-export const planOptions = [
-  { label: "Mensal", value: "monthly" },
-  { label: "Trimestral", value: "quarterly" },
-  { badge: "15% OFF", label: "Anual", value: "annual" },
-] as const
 
 export const trainerOptions = [
   { label: "Marcos Silva", value: "1" },

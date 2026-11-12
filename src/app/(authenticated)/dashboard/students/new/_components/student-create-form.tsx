@@ -4,7 +4,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import {
   Camera,
   CreditCard,
@@ -24,13 +24,14 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { formatDocument } from "@/lib/formats"
+import { formatCurrency } from "@/lib/currency"
 import { appToast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { getAddressByPostalCode } from "@/services/postal-code-service"
+import { listActiveMembershipPlans } from "@/services/membership-plans-service"
 import { createStudentInvitation } from "@/services/students-service"
 
 import {
-  planOptions,
   studentFormDefaultValues,
   studentFormSchema,
   trainerOptions,
@@ -83,6 +84,10 @@ export function StudentCreateForm() {
   const phone = useWatch({ control, name: "phone" })
   const zipCode = useWatch({ control, name: "zipCode" })
   const zipCodeRegistration = register("zipCode")
+  const membershipPlansQuery = useQuery({
+    queryKey: ["membership-plans", "active"],
+    queryFn: ({ signal }) => listActiveMembershipPlans(signal),
+  })
 
   const postalCodeMutation = useMutation({
     mutationFn: getAddressByPostalCode,
@@ -532,31 +537,58 @@ export function StudentCreateForm() {
                       onBlur={field.onBlur}
                       onValueChange={field.onChange}
                     >
-                      {planOptions.map((option) => (
-                        <label
-                          key={option.value}
-                          htmlFor={`student-plan-${option.value}`}
-                          className="relative cursor-pointer overflow-hidden rounded-lg"
-                        >
-                          <RadioGroupItem
-                            id={`student-plan-${option.value}`}
-                            value={option.value}
-                            variant="card"
-                          />
+                      {membershipPlansQuery.data?.map((plan) => {
+                        const price = plan.prices[0]
+                        const monthlyEquivalent = price?.billingInterval === "yearly"
+                          ? price.amount / (12 * price.intervalCount)
+                          : null
 
-                          <span className="relative flex h-10 items-center justify-center overflow-hidden rounded-lg border border-outline-variant px-2 text-xs font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high peer-focus-visible:border-primary-container peer-focus-visible:ring-2 peer-focus-visible:ring-primary-container/30 peer-data-checked:border-primary-container peer-data-checked:bg-primary-container/10 peer-data-checked:text-primary-container sm:text-sm">
-                            {option.label}
-                            {"badge" in option && (
-                              <span className="pointer-events-none absolute top-2 -right-6 w-20 rotate-45 bg-primary-container py-0.5 text-center text-[7px] leading-none font-bold whitespace-nowrap text-black">
-                                {option.badge}
-                              </span>
-                            )}
-                          </span>
-                        </label>
-                      ))}
+                        return (
+                          <label
+                            key={plan.id}
+                            htmlFor={`student-plan-${plan.id}`}
+                            className="relative cursor-pointer overflow-hidden rounded-lg"
+                          >
+                            <RadioGroupItem
+                              id={`student-plan-${plan.id}`}
+                              value={plan.id}
+                              variant="card"
+                            />
+
+                            <span className="relative flex min-h-16 flex-col items-center justify-center overflow-hidden rounded-lg border border-outline-variant px-2 py-1 text-xs font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high peer-focus-visible:border-primary-container peer-focus-visible:ring-2 peer-focus-visible:ring-primary-container/30 peer-data-checked:border-primary-container peer-data-checked:bg-primary-container/10 peer-data-checked:text-primary-container sm:text-sm">
+                              <span>{plan.name}</span>
+                              {price && (
+                                <span className="text-[10px] font-normal text-on-surface-variant">
+                                  {formatCurrency(price.amount, price.currency)}
+                                  /{price.billingInterval === "yearly" ? "ano" : "mês"}
+                                </span>
+                              )}
+                              {monthlyEquivalent !== null && (
+                                <span className="text-[10px] font-normal text-on-surface-variant">
+                                  equivale a {formatCurrency(monthlyEquivalent, price.currency)}/mês
+                                </span>
+                              )}
+                            </span>
+                          </label>
+                        )
+                      })}
                     </RadioGroup>
                   )}
                 />
+                {membershipPlansQuery.isPending && (
+                  <p className="text-xs text-on-surface-variant">Carregando planos...</p>
+                )}
+                {membershipPlansQuery.isError && (
+                  <p role="alert" className="text-xs text-error">
+                    {membershipPlansQuery.error.message}
+                  </p>
+                )}
+                {membershipPlansQuery.isSuccess
+                  && membershipPlansQuery.data.length === 0 && (
+                    <p role="status" className="text-xs text-on-surface-variant">
+                      Nenhum plano ativo está disponível.
+                    </p>
+                  )}
                 <FieldError errors={[errors.plan]} />
               </Field>
 
