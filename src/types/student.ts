@@ -5,6 +5,7 @@ export interface Student {
   createdAt: string
   email: string
   id: string
+  tenantUserId: string
   lastCheckInAt: string | null
   name: string
   planName: string | null
@@ -40,6 +41,7 @@ export interface CreateStudentInvitationInput {
   startDate: string
   state: string
   street: string
+  trainerTenantUserId?: string
   dueDay: number
   zipCode: string
 }

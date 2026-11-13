@@ -4,6 +4,7 @@ export interface Trainer {
   createdAt: string
   email: string
   id: string
+  tenantUserId: string
   linkedStudentsCount: number | null
   name: string
   registrationNumber: string | null

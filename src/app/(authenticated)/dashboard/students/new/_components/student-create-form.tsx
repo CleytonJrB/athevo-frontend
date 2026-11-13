@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -31,11 +32,11 @@ import { cn } from "@/lib/utils"
 import { getAddressByPostalCode } from "@/services/postal-code-service"
 import { listActiveMembershipPlans } from "@/services/membership-plans-service"
 import { createStudentInvitation } from "@/services/students-service"
+import { listTrainers } from "@/services/trainers-service"
 
 import {
   studentFormDefaultValues,
   studentFormSchema,
-  trainerOptions,
   type StudentFormData,
 } from "../_data/student-form"
 import { StudentFormSection } from "./student-form-section"
@@ -63,6 +64,10 @@ function formatZipCode(value: string) {
 
 export function StudentCreateForm() {
   const router = useRouter()
+  const { data: session, status: sessionStatus } = useSession()
+  const canManageTrainer = ["Owner", "Administrator", "Manager"].includes(
+    session?.user.role ?? "",
+  )
   const photoInputRef = useRef<HTMLInputElement>(null)
   const pendingPostalCodeRef = useRef<string | null>(null)
   const [photo, setPhoto] = useState<{ dataUrl: string; name: string } | null>(null)
@@ -88,6 +93,16 @@ export function StudentCreateForm() {
   const membershipPlansQuery = useQuery({
     queryKey: ["membership-plans", "active"],
     queryFn: ({ signal }) => listActiveMembershipPlans(signal),
+  })
+  const trainersQuery = useQuery({
+    queryKey: ["trainers", session?.user.tenantId, "student-form", "active"],
+    queryFn: ({ signal }) => listTrainers(
+      { active: true, page: 1, pageSize: 100 },
+      signal,
+    ),
+    enabled: sessionStatus === "authenticated"
+      && Boolean(session?.user.tenantId)
+      && canManageTrainer,
   })
 
   const postalCodeMutation = useMutation({
@@ -178,6 +193,7 @@ export function StudentCreateForm() {
       startDate: data.startDate,
       state: data.state.toUpperCase(),
       street: data.street.trim(),
+      trainerTenantUserId: data.trainer || undefined,
       zipCode: data.zipCode.replace(/\D/g, ""),
     })
   }
@@ -652,7 +668,8 @@ export function StudentCreateForm() {
                 )}
               />
 
-              <Field data-invalid={Boolean(errors.trainer)}>
+              {canManageTrainer && (
+                <Field data-invalid={Boolean(errors.trainer)}>
                 <FieldLabel htmlFor="student-trainer">Professor Vinculado</FieldLabel>
                 <SelectInput
                   id="student-trainer"
@@ -660,15 +677,31 @@ export function StudentCreateForm() {
                   aria-invalid={Boolean(errors.trainer)}
                   {...register("trainer")}
                 >
-                  <option value="">Selecione um professor</option>
-                  {trainerOptions.map((trainer) => (
-                    <option key={trainer.value} value={trainer.value}>
-                      {trainer.label}
+                  <option value="">Nenhum professor</option>
+                  {trainersQuery.data?.items.map((trainer) => (
+                    <option key={trainer.tenantUserId} value={trainer.tenantUserId}>
+                      {trainer.name}
                     </option>
                   ))}
                 </SelectInput>
-                <FieldError errors={[errors.trainer]} />
-              </Field>
+                {trainersQuery.isPending && (
+                  <p className="text-xs text-on-surface-variant">
+                    Carregando professores...
+                  </p>
+                )}
+                {trainersQuery.isError && (
+                  <p role="alert" className="text-xs text-error">
+                    {trainersQuery.error.message}
+                  </p>
+                )}
+                {trainersQuery.isSuccess && trainersQuery.data.items.length === 0 && (
+                  <p role="status" className="text-xs text-on-surface-variant">
+                    Nenhum professor ativo esta disponivel.
+                  </p>
+                )}
+                  <FieldError errors={[errors.trainer]} />
+                </Field>
+              )}
             </div>
           </StudentFormSection>
         </div>

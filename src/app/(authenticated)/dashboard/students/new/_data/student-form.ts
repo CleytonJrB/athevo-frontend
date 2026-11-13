@@ -82,7 +82,14 @@ export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
     .min(1, "O dia mínimo é 1")
     .max(28, "O dia máximo é 28")
     .required("O vencimento é obrigatório"),
-  trainer: yup.string().required("Selecione um professor"),
+  trainer: yup
+    .string()
+    .test(
+      "valid-trainer",
+      "Selecione um professor valido",
+      (value) => !value || yup.string().uuid().isValidSync(value),
+    )
+    .defined(),
 })
 
 export const studentFormDefaultValues: StudentFormData = {
@@ -105,9 +112,3 @@ export const studentFormDefaultValues: StudentFormData = {
   trainer: "",
   zipCode: "",
 }
-
-export const trainerOptions = [
-  { label: "Marcos Silva", value: "1" },
-  { label: "Ana Souza", value: "2" },
-  { label: "Carlos Mendes", value: "3" },
-] as const
