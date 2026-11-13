@@ -1,4 +1,5 @@
 import type { AcademyListItem } from "@/types/academy"
+import { getTenantRoleLabel } from "@/lib/tenant-role"
 
 const studentRangeLabels: Record<string, string> = {
   UpTo50: "até 50 alunos",
@@ -6,15 +7,6 @@ const studentRangeLabels: Record<string, string> = {
   From101To300: "101 a 300 alunos",
   From301To700: "301 a 700 alunos",
   MoreThan700: "mais de 700 alunos",
-}
-
-const academyRoleLabels: Record<string, string> = {
-  Owner: "Proprietário",
-  Administrator: "Administrador",
-  Manager: "Gerente",
-  Instructor: "Professor",
-  Receptionist: "Recepção",
-  Student: "Aluno",
 }
 
 export function formatAcademySummary(academy: AcademyListItem) {
@@ -53,7 +45,7 @@ export function getAcademyInitials(name: string) {
 }
 
 export function formatAcademyRole(role: string) {
-  return academyRoleLabels[role] ?? role
+  return getTenantRoleLabel(role)
 }
 
 export function createSessionAcademy(

@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { formatDocument } from "@/lib/formats"
 import { formatCurrency } from "@/lib/currency"
+import { canManageStudentTrainers } from "@/lib/tenant-role"
 import { appToast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { getAddressByPostalCode } from "@/services/postal-code-service"
@@ -65,9 +66,7 @@ function formatZipCode(value: string) {
 export function StudentCreateForm() {
   const router = useRouter()
   const { data: session, status: sessionStatus } = useSession()
-  const canManageTrainer = ["Owner", "Administrator", "Manager"].includes(
-    session?.user.role ?? "",
-  )
+  const canManageTrainer = canManageStudentTrainers(session?.user.role)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const pendingPostalCodeRef = useRef<string | null>(null)
   const [photo, setPhoto] = useState<{ dataUrl: string; name: string } | null>(null)
