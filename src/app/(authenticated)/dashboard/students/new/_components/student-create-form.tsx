@@ -32,7 +32,7 @@ import { appToast } from "@/lib/toast"
 import { cn } from "@/lib/utils"
 import { getAddressByPostalCode } from "@/services/postal-code-service"
 import { listActiveMembershipPlans } from "@/services/membership-plans-service"
-import { createStudentInvitation } from "@/services/students-service"
+import { createStudentInvitation, uploadStudentPhoto } from "@/services/students-service"
 import { listTrainers } from "@/services/trainers-service"
 
 import {
@@ -69,7 +69,7 @@ export function StudentCreateForm() {
   const canManageTrainer = canManageStudentTrainers(session?.user.role)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const pendingPostalCodeRef = useRef<string | null>(null)
-  const [photo, setPhoto] = useState<{ dataUrl: string; name: string } | null>(null)
+  const [photo, setPhoto] = useState<{ dataUrl: string; file: File; name: string } | null>(null)
   const {
     control,
     clearErrors,
@@ -134,7 +134,22 @@ export function StudentCreateForm() {
       errorFallback: "Não foi possível enviar o convite. Tente novamente.",
       errorTitle: "Erro ao cadastrar aluno",
     },
-    onSuccess: () => {
+    onSuccess: async (result) => {
+      if (photo && result.tenantUserId) {
+        try {
+          await uploadStudentPhoto(result.tenantUserId, photo.file)
+        } catch (error) {
+          appToast.error(error, {
+            title: "Aluno cadastrado, mas a foto nao foi enviada. Tente salvar novamente",
+          })
+          return
+        }
+      } else if (photo) {
+        appToast.warning(
+          "Foto pendente",
+          "O convite ja existia e a foto nao foi alterada.",
+        )
+      }
       appToast.success(
         "Convite enviado",
         "O aluno receberá as instruções para ativar a conta.",
@@ -199,8 +214,8 @@ export function StudentCreateForm() {
 
   function handlePhotoChange(file?: File) {
     if (!file) return
-    if (!["image/jpeg", "image/png"].includes(file.type)) {
-      appToast.warning("Formato não suportado", "Selecione uma imagem JPG ou PNG.")
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      appToast.warning("Formato não suportado", "Selecione uma imagem JPG, PNG ou WebP.")
       if (photoInputRef.current) photoInputRef.current.value = ""
       return
     }
@@ -213,7 +228,7 @@ export function StudentCreateForm() {
     const reader = new FileReader()
     reader.addEventListener("load", () => {
       if (typeof reader.result === "string") {
-        setPhoto({ dataUrl: reader.result, name: file.name })
+        setPhoto({ dataUrl: reader.result, file, name: file.name })
       }
     })
     reader.addEventListener("error", () => {
@@ -495,7 +510,7 @@ export function StudentCreateForm() {
               <input
                 ref={photoInputRef}
                 type="file"
-                accept="image/jpeg,image/png"
+                accept="image/jpeg,image/png,image/webp"
                 className="sr-only"
                 onChange={(event) => handlePhotoChange(event.target.files?.[0])}
               />

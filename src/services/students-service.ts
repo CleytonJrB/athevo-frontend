@@ -7,6 +7,8 @@ import type {
   StudentInvitationRequestResult,
   StudentListParams,
   StudentPage,
+  StudentPhotoResult,
+  StudentPhotoUploadAuthorization,
 } from "@/types/student"
 
 interface ApiProblemDetails {
@@ -52,6 +54,24 @@ export async function listStudents(
 export async function createStudentInvitation(input: CreateStudentInvitationInput) {
   const response = await axios.post<StudentInvitationRequestResult>("/api/students", input)
   return response.data
+}
+
+export async function uploadStudentPhoto(tenantUserId: string, file: File) {
+  const authorization = await axios.post<StudentPhotoUploadAuthorization>(
+    `/api/students/${tenantUserId}/photo/uploads`,
+    { byteSize: file.size, contentType: file.type },
+  )
+
+  await axios.put(authorization.data.uploadUrl, file, {
+    headers: authorization.data.headers,
+    maxBodyLength: 5 * 1024 * 1024,
+    withCredentials: false,
+  })
+
+  const confirmation = await axios.post<StudentPhotoResult>(
+    `/api/students/${tenantUserId}/photo/uploads/${authorization.data.assetId}/confirm`,
+  )
+  return confirmation.data
 }
 
 export async function lookupStudentInvitation(token: string) {

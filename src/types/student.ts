@@ -48,6 +48,21 @@ export interface CreateStudentInvitationInput {
 
 export interface StudentInvitationRequestResult {
   message: string
+  tenantUserId?: string
+}
+
+export interface StudentPhotoUploadAuthorization {
+  assetId: string
+  expiresAt: string
+  headers: Record<string, string>
+  method: "PUT"
+  uploadUrl: string
+}
+
+export interface StudentPhotoResult {
+  assetId: string
+  expiresAt: string
+  url: string
 }
 
 export interface StudentInvitationLookupResult {
