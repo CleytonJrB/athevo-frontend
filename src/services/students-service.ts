@@ -5,6 +5,7 @@ import type {
   CreateStudentInvitationInput,
   StudentInvitationLookupResult,
   StudentInvitationRequestResult,
+  StudentDetails,
   StudentListParams,
   StudentPage,
   StudentPhotoResult,
@@ -49,6 +50,36 @@ export async function listStudents(
 
     throw error
   }
+}
+
+export async function getStudentDetails(
+  tenantUserId: string,
+  signal?: AbortSignal,
+) {
+  try {
+    const response = await axios.get<StudentDetails>(
+      `/api/students/${tenantUserId}`,
+      { signal },
+    )
+    return response.data
+  } catch (error) {
+    if (isAxiosError<ApiProblemDetails>(error)) {
+      throw new Error(getStudentListErrorMessage(error.response?.status))
+    }
+
+    throw error
+  }
+}
+
+export async function getStudentPhoto(
+  tenantUserId: string,
+  signal?: AbortSignal,
+) {
+  const response = await axios.get<StudentPhotoResult>(
+    `/api/students/${tenantUserId}/photo`,
+    { signal },
+  )
+  return response.data
 }
 
 export async function createStudentInvitation(input: CreateStudentInvitationInput) {

@@ -6,10 +6,14 @@ export interface Student {
   email: string
   id: string
   tenantUserId: string
+  hasPhoto: boolean
   lastCheckInAt: string | null
   name: string
   planName: string | null
+  trainerName: string | null
 }
+
+export type StudentDetails = Student
 
 export interface StudentPage {
   items: Student[]

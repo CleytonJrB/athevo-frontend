@@ -1,6 +1,5 @@
 import { Edit3, Eye, MoreVertical } from "lucide-react"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -11,6 +10,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import type { Student, StudentStatus } from "@/types/student"
+
+import { StudentAvatar } from "./student-avatar"
 
 interface StudentsTableProps {
   loading?: boolean
@@ -43,15 +44,6 @@ const checkInFormatter = new Intl.DateTimeFormat("pt-BR", {
   year: "numeric",
 })
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-}
-
 function StudentsTableSkeleton() {
   return Array.from({ length: 5 }, (_, index) => (
     <tr key={index} className="border-b border-border last:border-0">
@@ -66,6 +58,9 @@ function StudentsTableSkeleton() {
       </td>
       <td className="px-6 py-4">
         <Skeleton className="h-4 w-24" />
+      </td>
+      <td className="px-6 py-4">
+        <Skeleton className="h-4 w-28" />
       </td>
       <td className="px-6 py-4">
         <Skeleton className="h-6 w-20 rounded-full" />
@@ -94,6 +89,7 @@ export function StudentsTable({
             {[
               ["Aluno", "text-left"],
               ["Plano", "text-left"],
+              ["Professor", "text-left"],
               ["Status", "text-left"],
               ["Último check-in", "text-left"],
               ["Ações", "text-right"],
@@ -126,11 +122,11 @@ export function StudentsTable({
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      <Avatar size="lg">
-                        <AvatarFallback className="bg-surface-container text-sm font-semibold text-on-surface-variant">
-                          {getInitials(student.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <StudentAvatar
+                        hasPhoto={student.hasPhoto}
+                        name={student.name}
+                        tenantUserId={student.tenantUserId}
+                      />
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-on-surface">
                           {student.name}
@@ -143,6 +139,9 @@ export function StudentsTable({
                   </td>
                   <td className="px-6 py-4 text-sm text-on-surface">
                     {student.planName ?? "—"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-on-surface">
+                    {student.trainerName ?? "—"}
                   </td>
                   <td className="px-6 py-4">
                     <span

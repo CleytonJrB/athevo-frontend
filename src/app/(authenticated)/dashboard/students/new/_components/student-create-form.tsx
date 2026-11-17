@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useRef, useState } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   Camera,
   CreditCard,
@@ -65,6 +65,7 @@ function formatZipCode(value: string) {
 
 export function StudentCreateForm() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: session, status: sessionStatus } = useSession()
   const canManageTrainer = canManageStudentTrainers(session?.user.role)
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -154,6 +155,9 @@ export function StudentCreateForm() {
         "Convite enviado",
         "O aluno receberá as instruções para ativar a conta.",
       )
+      await queryClient.invalidateQueries({
+        queryKey: ["students", session?.user.tenantId],
+      })
       router.push("/dashboard/students")
       router.refresh()
     },

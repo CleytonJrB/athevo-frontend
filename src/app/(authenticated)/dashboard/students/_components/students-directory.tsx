@@ -16,6 +16,7 @@ import {
   StudentsPageHeader,
   type StudentStatusFilter,
 } from "./students-page-header"
+import { StudentDetailsSheet } from "./student-details-sheet"
 import { StudentsEmptyState } from "./students-empty-state"
 import { StudentsTable } from "./students-table"
 
@@ -28,6 +29,7 @@ export function StudentsDirectory() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [filtersVisible, setFiltersVisible] = useState(false)
   const [page, setPage] = useState(1)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -69,6 +71,10 @@ export function StudentsDirectory() {
 
   function showPendingAction(action: string, student: Student) {
     appToast.info(`${action} de ${student.name} estará disponível em breve.`)
+  }
+
+  function viewStudent(student: Student) {
+    setSelectedStudentId(student.tenantUserId)
   }
 
   function clearFilters() {
@@ -148,7 +154,7 @@ export function StudentsDirectory() {
               students={students}
               loading={isPending}
               onEdit={(student) => showPendingAction("A edição", student)}
-              onView={(student) => showPendingAction("O perfil", student)}
+              onView={viewStudent}
             />
             <DataPagination
               page={page}
@@ -161,6 +167,14 @@ export function StudentsDirectory() {
           </>
         )}
       </section>
+
+      <StudentDetailsSheet
+        open={selectedStudentId !== null}
+        tenantUserId={selectedStudentId}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudentId(null)
+        }}
+      />
     </div>
   )
 }
