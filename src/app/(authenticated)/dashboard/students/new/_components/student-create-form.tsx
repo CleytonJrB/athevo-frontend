@@ -77,6 +77,7 @@ export function StudentCreateForm() {
     getValues,
     handleSubmit,
     register,
+    reset,
     setError,
     setFocus,
     setValue,
@@ -104,6 +105,16 @@ export function StudentCreateForm() {
       && Boolean(session?.user.tenantId)
       && canManageTrainer,
   })
+
+  async function finishStudentCreation() {
+    await queryClient.invalidateQueries({
+      queryKey: ["students", session?.user.tenantId],
+    })
+    reset(studentFormDefaultValues)
+    setPhoto(null)
+    router.push("/dashboard/students")
+    router.refresh()
+  }
 
   const postalCodeMutation = useMutation({
     mutationFn: getAddressByPostalCode,
@@ -147,33 +158,28 @@ export function StudentCreateForm() {
           "Solicitação recebida",
           "Confira a listagem para reenviar um convite que ainda esteja pendente.",
         )
-        await queryClient.invalidateQueries({
-          queryKey: ["students", session?.user.tenantId],
-        })
-        router.push("/dashboard/students")
-        router.refresh()
+        await finishStudentCreation()
         return
       }
 
+      let photoUploadFailed = false
       if (photo && result.tenantUserId) {
         try {
           await uploadStudentPhoto(result.tenantUserId, photo.file)
         } catch (error) {
+          photoUploadFailed = true
           appToast.error(error, {
-            title: "Aluno cadastrado, mas a foto nao foi enviada. Tente salvar novamente",
+            title: "Aluno cadastrado, mas a foto não foi enviada",
           })
-          return
         }
       }
-      appToast.success(
-        "Convite agendado",
-        "O aluno receberá as instruções para ativar a conta.",
-      )
-      await queryClient.invalidateQueries({
-        queryKey: ["students", session?.user.tenantId],
-      })
-      router.push("/dashboard/students")
-      router.refresh()
+      if (!photoUploadFailed) {
+        appToast.success(
+          "Convite agendado",
+          "O aluno receberá as instruções para ativar a conta.",
+        )
+      }
+      await finishStudentCreation()
     },
   })
 
