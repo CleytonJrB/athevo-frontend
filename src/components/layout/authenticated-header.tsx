@@ -3,6 +3,7 @@
 import { Fragment, type ComponentProps } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Bell, Search } from "lucide-react"
 
 import {
@@ -19,6 +20,7 @@ import {
   dashboardRouteLabels,
   implementedDashboardRoutes,
 } from "@/config/dashboard-navigation"
+import { getTenantRoleLabel } from "@/lib/tenant-role"
 import { cn } from "@/lib/utils"
 
 export type AuthBreadcrumbItem = {
@@ -77,7 +79,11 @@ export function AuthenticatedHeader({
   className,
 }: AuthenticatedHeaderProps = {}) {
   const pathname = usePathname()
+  const { data: session } = useSession()
   const items = breadcrumbs ?? getRouteBreadcrumbs(pathname)
+  const roleLabel = session?.user.role
+    ? getTenantRoleLabel(session.user.role)
+    : null
 
   return (
     <header
@@ -142,6 +148,19 @@ export function AuthenticatedHeader({
             className="h-9 w-48 rounded-[6px] border border-outline-variant bg-surface-container py-1.5 pr-4 pl-10 text-sm text-on-surface outline-none transition-[border-color,box-shadow] placeholder:text-on-surface-variant focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 disabled:cursor-not-allowed lg:w-64"
           />
         </div>
+        {roleLabel && (
+          <div
+            aria-label={`Cargo na academia ${session.user.tenantName ?? "selecionada"}: ${roleLabel}`}
+            title={session.user.tenantName ?? undefined}
+            className="hidden h-8 items-center gap-2 rounded-full border border-emerald-800/50 bg-emerald-950/40 px-3 text-xs font-medium whitespace-nowrap text-emerald-400 lg:flex"
+          >
+            <span
+              aria-hidden="true"
+              className="size-2 shrink-0 rounded-full bg-emerald-400"
+            />
+            Cargo: {roleLabel}
+          </div>
+        )}
         <Button
           type="button"
           variant="ghost"
