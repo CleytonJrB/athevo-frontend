@@ -34,3 +34,28 @@ export async function GET(_request: Request, context: RouteContext) {
     )
   }
 }
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  const { tenantUserId } = await context.params
+
+  try {
+    await Api.delete<void>(`/api/students/${tenantUserId}`)
+    return new NextResponse(null, { status: 204 })
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json(
+        {
+          detail: error.message,
+          title: "Nao foi possivel excluir o aluno",
+          traceId: error.traceId,
+        },
+        { status: error.status },
+      )
+    }
+
+    return NextResponse.json(
+      { title: "Nao foi possivel excluir o aluno" },
+      { status: 500 },
+    )
+  }
+}

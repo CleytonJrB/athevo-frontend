@@ -1,10 +1,11 @@
-import { Edit3, Eye, MoreVertical } from "lucide-react"
+import { Edit3, Eye, LoaderCircle, MoreVertical, Send, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,8 +17,11 @@ import { StudentAvatar } from "./student-avatar"
 interface StudentsTableProps {
   loading?: boolean
   students: Student[]
+  onDelete?: (student: Student) => void
   onEdit: (student: Student) => void
+  onResendInvitation: (student: Student) => void
   onView: (student: Student) => void
+  resendingStudentId?: string | null
 }
 
 const statusPresentation: Record<
@@ -33,6 +37,11 @@ const statusPresentation: Record<
     label: "Inativo",
     className: "border-outline-variant bg-surface-container text-on-surface-variant",
     dotClassName: "bg-on-surface-variant",
+  },
+  pendingInvitation: {
+    label: "Convite pendente",
+    className: "border-primary-container/30 bg-primary-container/10 text-primary-container",
+    dotClassName: "bg-primary-container",
   },
 }
 
@@ -78,8 +87,11 @@ function StudentsTableSkeleton() {
 export function StudentsTable({
   loading = false,
   students,
+  onDelete,
   onEdit,
+  onResendInvitation,
   onView,
+  resendingStudentId = null,
 }: StudentsTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -113,7 +125,14 @@ export function StudentsTable({
             <StudentsTableSkeleton />
           ) : (
             students.map((student) => {
-              const status = statusPresentation[student.active ? "active" : "inactive"]
+              const status = statusPresentation[
+                student.canResendInvitation
+                  ? "pendingInvitation"
+                  : student.active
+                    ? "active"
+                    : "inactive"
+              ]
+              const isResendingInvitation = resendingStudentId === student.tenantUserId
 
               return (
                 <tr
@@ -190,15 +209,48 @@ export function StudentsTable({
                         >
                           <MoreVertical aria-hidden="true" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44">
-                          <DropdownMenuItem onClick={() => onView(student)}>
+                        <DropdownMenuContent align="end" className="w-48 p-1.5">
+                          <DropdownMenuItem
+                            className="gap-2 py-1.5"
+                            onClick={() => onView(student)}
+                          >
                             <Eye aria-hidden="true" />
                             Ver perfil
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onEdit(student)}>
+                          <DropdownMenuItem
+                            className="gap-2 py-1.5"
+                            onClick={() => onEdit(student)}
+                          >
                             <Edit3 aria-hidden="true" />
                             Editar cadastro
                           </DropdownMenuItem>
+                          {student.canResendInvitation && (
+                            <DropdownMenuItem
+                              className="gap-2 py-1.5"
+                              disabled={isResendingInvitation}
+                              onClick={() => onResendInvitation(student)}
+                            >
+                              {isResendingInvitation ? (
+                                <LoaderCircle aria-hidden="true" className="animate-spin" />
+                              ) : (
+                                <Send aria-hidden="true" />
+                              )}
+                              {isResendingInvitation ? "Reenviando..." : "Reenviar convite"}
+                            </DropdownMenuItem>
+                          )}
+                          {onDelete && (
+                            <>
+                              <DropdownMenuSeparator className="my-1.5" />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                className="gap-2 py-1.5 hover:bg-destructive/15 focus:bg-destructive/20 dark:hover:bg-destructive/25"
+                                onClick={() => onDelete(student)}
+                              >
+                                <Trash2 aria-hidden="true" />
+                                Excluir aluno
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

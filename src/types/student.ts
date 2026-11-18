@@ -1,7 +1,8 @@
-export type StudentStatus = "active" | "inactive"
+export type StudentStatus = "active" | "inactive" | "pendingInvitation"
 
 export interface Student {
   active: boolean
+  canResendInvitation: boolean
   createdAt: string
   email: string
   id: string

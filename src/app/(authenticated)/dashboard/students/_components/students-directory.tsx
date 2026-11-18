@@ -1,21 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Search } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { DataPagination } from "@/components/ui/data-pagination"
 import { Input } from "@/components/ui/input"
+import { canDeleteStudents } from "@/lib/tenant-role"
 import { appToast } from "@/lib/toast"
-import { listStudents } from "@/services/students-service"
+import {
+  deleteStudent,
+  listStudents,
+  resendStudentInvitation,
+} from "@/services/students-service"
 import type { Student } from "@/types/student"
 
 import {
   StudentsPageHeader,
   type StudentStatusFilter,
 } from "./students-page-header"
+import { DeleteStudentDialog } from "./delete-student-dialog"
 import { StudentDetailsSheet } from "./student-details-sheet"
 import { StudentsEmptyState } from "./students-empty-state"
 import { StudentsTable } from "./students-table"
@@ -24,12 +30,14 @@ const pageSize = 10
 
 export function StudentsDirectory() {
   const { data: session, status: sessionStatus } = useSession()
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<StudentStatusFilter>("all")
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [filtersVisible, setFiltersVisible] = useState(false)
   const [page, setPage] = useState(1)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+  const [studentPendingDeletion, setStudentPendingDeletion] = useState<Student | null>(null)
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -61,6 +69,43 @@ export function StudentsDirectory() {
     placeholderData: keepPreviousData,
     meta: {
       errorTitle: "Não foi possível carregar os alunos",
+    },
+  })
+
+  const resendInvitationMutation = useMutation({
+    mutationFn: (student: Student) => resendStudentInvitation(student.tenantUserId),
+    meta: {
+      errorFallback: "Não foi possível solicitar o reenvio. Tente novamente.",
+      errorTitle: "Erro ao reenviar convite",
+    },
+    onSuccess: async (_result, student) => {
+      appToast.success(
+        "Reenvio solicitado",
+        `Um novo convite foi agendado para ${student.name}.`,
+      )
+      await queryClient.invalidateQueries({
+        queryKey: ["students", session?.user.tenantId],
+      })
+    },
+  })
+
+  const deleteStudentMutation = useMutation({
+    mutationFn: (student: Student) => deleteStudent(student.tenantUserId),
+    meta: {
+      errorFallback: "Não foi possível excluir o aluno. Tente novamente.",
+      errorTitle: "Erro ao excluir aluno",
+    },
+    onSuccess: async (_result, student) => {
+      setStudentPendingDeletion(null)
+      if (selectedStudentId === student.tenantUserId) setSelectedStudentId(null)
+      if (students.length === 1 && page > 1) setPage((current) => current - 1)
+      appToast.success(
+        "Aluno excluído",
+        `${student.name} foi removido da academia e poderá ser cadastrado novamente.`,
+      )
+      await queryClient.invalidateQueries({
+        queryKey: ["students", session?.user.tenantId],
+      })
     },
   })
 
@@ -153,8 +198,19 @@ export function StudentsDirectory() {
             <StudentsTable
               students={students}
               loading={isPending}
+              onDelete={
+                canDeleteStudents(session?.user.role)
+                  ? setStudentPendingDeletion
+                  : undefined
+              }
               onEdit={(student) => showPendingAction("A edição", student)}
+              onResendInvitation={(student) => resendInvitationMutation.mutate(student)}
               onView={viewStudent}
+              resendingStudentId={
+                resendInvitationMutation.isPending
+                  ? resendInvitationMutation.variables?.tenantUserId
+                  : null
+              }
             />
             <DataPagination
               page={page}
@@ -173,6 +229,19 @@ export function StudentsDirectory() {
         tenantUserId={selectedStudentId}
         onOpenChange={(open) => {
           if (!open) setSelectedStudentId(null)
+        }}
+      />
+
+      <DeleteStudentDialog
+        deleting={deleteStudentMutation.isPending}
+        student={studentPendingDeletion}
+        onConfirm={() => {
+          if (studentPendingDeletion) {
+            deleteStudentMutation.mutate(studentPendingDeletion)
+          }
+        }}
+        onOpenChange={(open) => {
+          if (!open) setStudentPendingDeletion(null)
         }}
       />
     </div>

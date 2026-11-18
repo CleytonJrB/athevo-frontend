@@ -87,6 +87,17 @@ export async function createStudentInvitation(input: CreateStudentInvitationInpu
   return response.data
 }
 
+export async function resendStudentInvitation(tenantUserId: string) {
+  const response = await axios.post<StudentInvitationRequestResult>(
+    `/api/students/${tenantUserId}/invitation/resend`,
+  )
+  return response.data
+}
+
+export async function deleteStudent(tenantUserId: string) {
+  await axios.delete(`/api/students/${tenantUserId}`)
+}
+
 export async function uploadStudentPhoto(tenantUserId: string, file: File) {
   const authorization = await axios.post<StudentPhotoUploadAuthorization>(
     `/api/students/${tenantUserId}/photo/uploads`,
