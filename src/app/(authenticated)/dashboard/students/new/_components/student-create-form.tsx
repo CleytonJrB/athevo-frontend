@@ -136,6 +136,25 @@ export function StudentCreateForm() {
       errorTitle: "Erro ao cadastrar aluno",
     },
     onSuccess: async (result) => {
+      if (!result.tenantUserId) {
+        if (photo) {
+          appToast.warning(
+            "Foto não processada",
+            "A solicitação não criou um novo cadastro, por isso a foto não foi alterada.",
+          )
+        }
+        appToast.info(
+          "Solicitação recebida",
+          "Confira a listagem para reenviar um convite que ainda esteja pendente.",
+        )
+        await queryClient.invalidateQueries({
+          queryKey: ["students", session?.user.tenantId],
+        })
+        router.push("/dashboard/students")
+        router.refresh()
+        return
+      }
+
       if (photo && result.tenantUserId) {
         try {
           await uploadStudentPhoto(result.tenantUserId, photo.file)
@@ -145,14 +164,9 @@ export function StudentCreateForm() {
           })
           return
         }
-      } else if (photo) {
-        appToast.warning(
-          "Foto pendente",
-          "O convite ja existia e a foto nao foi alterada.",
-        )
       }
       appToast.success(
-        "Convite enviado",
+        "Convite agendado",
         "O aluno receberá as instruções para ativar a conta.",
       )
       await queryClient.invalidateQueries({

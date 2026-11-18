@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useState } from "react"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { CheckCircle2, Dumbbell, Loader2 } from "lucide-react"
 
@@ -16,17 +16,12 @@ import {
   lookupStudentInvitation,
 } from "@/services/students-service"
 
-const subscribeToLocation = () => () => undefined
-const readInvitationToken = () =>
-  new URLSearchParams(window.location.search).get("token") ?? ""
-const readServerInvitationToken = () => null
-
 export function AcceptStudentInvitationForm() {
   const router = useRouter()
-  const token = useSyncExternalStore(
-    subscribeToLocation,
-    readInvitationToken,
-    readServerInvitationToken,
+  const [token] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : new URLSearchParams(window.location.search).get("token") ?? "",
   )
   const [password, setPassword] = useState("")
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
@@ -81,8 +76,8 @@ export function AcceptStudentInvitationForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12 text-on-surface">
-      <section className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low p-6 shadow-2xl sm:p-8">
+    <main className="grid min-h-dvh w-full place-items-center bg-background px-4 py-8 text-on-surface sm:px-6 sm:py-12">
+      <section className="mx-auto w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-low p-6 shadow-2xl sm:p-8">
         <Link href="/" className="mb-8 flex items-center gap-3 font-semibold text-primary-container">
           <span className="flex size-9 items-center justify-center rounded-md border border-primary-container/30 bg-primary-container/10">
             <Dumbbell aria-hidden="true" className="size-5" />
