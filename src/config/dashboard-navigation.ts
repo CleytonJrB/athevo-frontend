@@ -81,7 +81,12 @@ export const dashboardNavigation: DashboardMenuGroup[] = [
         url: "/dashboard/assessments",
         icon: ClipboardList,
       },
-      { name: "Financeiro", url: "/dashboard/finance", icon: Banknote },
+      {
+        name: "Financeiro",
+        url: "/dashboard/finance",
+        icon: Banknote,
+        implemented: true,
+      },
       { name: "Check-in", url: "/dashboard/check-ins", icon: UserRoundCheck },
       { name: "Relatórios", url: "/dashboard/reports", icon: ChartNoAxesCombined },
     ],
