@@ -80,7 +80,7 @@ export const studentFormSchema: yup.ObjectSchema<StudentFormData> = yup.object({
     .typeError("Informe o dia do vencimento")
     .integer("Informe um dia inteiro")
     .min(1, "O dia mínimo é 1")
-    .max(28, "O dia máximo é 28")
+    .max(31, "O dia máximo é 31")
     .required("O vencimento é obrigatório"),
   trainer: yup
     .string()
