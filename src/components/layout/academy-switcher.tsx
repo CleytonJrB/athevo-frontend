@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { createSessionAcademy } from "@/lib/academy"
+import { TenantRole } from "@/lib/tenant-role"
 import { appToast } from "@/lib/toast"
 import { listAcademies } from "@/services/academies-service"
 import type { AcademyListItem } from "@/types/academy"
@@ -32,6 +33,7 @@ export function AcademySwitcher() {
   const { data: session, status, update } = useSession()
   const [open, setOpen] = React.useState(false)
   const [switchingId, setSwitchingId] = React.useState<string | null>(null)
+  const isStudent = session?.user.role === TenantRole.Student
   const { data: academies = [], isPending } = useQuery({
     queryKey: academiesQueryKey,
     queryFn: ({ signal }) => listAcademies(signal),
@@ -45,7 +47,11 @@ export function AcademySwitcher() {
   const activeAcademy =
     academies.find((academy) => academy.id === session?.user.tenantId) ??
     academies.find((academy) => academy.isCurrent) ??
-    createSessionAcademy(session?.user.tenantId, session?.user.tenantName)
+    createSessionAcademy(
+      session?.user.tenantId,
+      session?.user.tenantName,
+      session?.user.role,
+    )
 
   if ((isPending || status === "loading") && !activeAcademy) {
     return <AcademySwitcherSkeleton />
@@ -105,6 +111,7 @@ export function AcademySwitcher() {
           <AcademySwitcherMenu
             academies={academies}
             activeAcademyId={activeAcademy?.id}
+            isStudent={isStudent}
             switchingId={switchingId}
             onClose={() => setOpen(false)}
             onSelect={switchAcademy}

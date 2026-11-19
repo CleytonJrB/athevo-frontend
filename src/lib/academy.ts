@@ -50,7 +50,8 @@ export function formatAcademyRole(role: string) {
 
 export function createSessionAcademy(
   tenantId?: string,
-  tenantName?: string
+  tenantName?: string,
+  role?: string,
 ): AcademyListItem | undefined {
   if (!tenantId) return undefined
 
@@ -58,7 +59,7 @@ export function createSessionAcademy(
     id: tenantId,
     name: tenantName ?? "Academia",
     slug: "",
-    role: "",
+    role: role ?? "",
     isCurrent: true,
     planName: null,
     activeStudentCount: null,

@@ -4,6 +4,7 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { formatAcademySummary, getAcademyInitials } from "@/lib/academy"
 import { cn } from "@/lib/utils"
 import type { AcademyListItem } from "@/types/academy"
+import { TenantRole } from "@/lib/tenant-role"
 
 interface AcademySwitcherItemProps {
   academy: AcademyListItem
@@ -20,7 +21,10 @@ export function AcademySwitcherItem({
   switching,
   onSelect,
 }: AcademySwitcherItemProps) {
-  const summary = formatAcademySummary(academy)
+  const summary =
+    academy.role === TenantRole.Student
+      ? "Portal do Aluno"
+      : formatAcademySummary(academy)
 
   return (
     <DropdownMenuItem

@@ -1,14 +1,19 @@
 "use client"
 
-import { Fragment, useState } from "react"
-
-import { LoaderCircle, LogOut, MoreVertical } from "lucide-react"
+import { useState } from "react"
+import Link from "next/link"
 
 import {
-  userMenu,
-  type DashboardMenuAction,
-} from "@/config/dashboard-navigation"
+  LoaderCircle,
+  LogOut,
+  MoreVertical,
+  Settings,
+  UserRound,
+  Wallet,
+} from "lucide-react"
+
 import { useAuth } from "@/hooks/use-auth"
+import { getTenantRoleLabel, TenantRole } from "@/lib/tenant-role"
 import { appToast } from "@/lib/toast"
 
 import {
@@ -40,6 +45,10 @@ export function NavUser() {
   const name = user?.name ?? "Usuario"
   const email = user?.email ?? ""
   const avatar = user?.image ?? ""
+  const roleLabel = user?.role ? getTenantRoleLabel(user.role) : null
+  const isStudent = user?.role === TenantRole.Student
+  const canOpenAcademySettings =
+    user?.role === TenantRole.Owner || user?.role === TenantRole.Administrator
 
   async function handleLogout() {
     if (isLoggingOut) return
@@ -55,22 +64,6 @@ export function NavUser() {
         title: "Falha ao sair",
       })
     }
-  }
-
-  function renderMenus(item: DashboardMenuAction, index: number) {
-    return (
-      <Fragment key={`${item.name}-${index}`}>
-        <DropdownMenuGroup>
-          <DropdownMenuItem disabled={!item.isActive}>
-            <item.icon />
-
-            {item.name}
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-
-        {item.hasSeparator && <DropdownMenuSeparator />}
-      </Fragment>
-    )
   }
 
   return (
@@ -102,7 +95,7 @@ export function NavUser() {
             <div className="grid min-w-0 flex-1 text-left text-sm leading-normal group-data-[collapsible=icon]:hidden">
               <span className="truncate font-medium text-on-surface transition-colors group-hover/menu-button:text-primary-container">{name}</span>
               <span className="truncate text-xs leading-[1.4] tracking-[0.02em] text-on-surface-variant">
-                {isLoggingOut ? "Encerrando sessão..." : email}
+                {isLoggingOut ? "Encerrando sessão..." : (roleLabel ?? email)}
               </span>
             </div>
 
@@ -125,6 +118,10 @@ export function NavUser() {
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium text-on-surface transition-colors group-hover/menu-button:text-primary-container">{name}</span>
                     <span className="truncate text-xs leading-[1.4] tracking-[0.02em] text-on-surface-variant">{email}</span>
+                    <span className="mt-1 truncate text-[11px] text-primary-container">
+                      {roleLabel}
+                      {user?.tenantName ? ` • ${user.tenantName}` : ""}
+                    </span>
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -132,7 +129,24 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            {userMenu.map(renderMenus)}
+            <DropdownMenuGroup>
+              <DropdownMenuItem render={<Link href="/dashboard/profile" />}>
+                <UserRound />
+                Meu perfil
+              </DropdownMenuItem>
+              {isStudent && (
+                <DropdownMenuItem render={<Link href="/dashboard/my-finance" />}>
+                  <Wallet />
+                  Meu financeiro
+                </DropdownMenuItem>
+              )}
+              {canOpenAcademySettings && (
+                <DropdownMenuItem render={<Link href="/dashboard/settings" />}>
+                  <Settings />
+                  Configurações da academia
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
 

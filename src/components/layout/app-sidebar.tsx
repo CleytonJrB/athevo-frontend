@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSession } from "next-auth/react"
 import {
   Sidebar,
   SidebarContent,
@@ -10,13 +11,16 @@ import {
 } from "@/components/ui/sidebar"
 
 import { cn } from "@/lib/utils"
-import { dashboardNavigation } from "@/config/dashboard-navigation"
+import { getDashboardNavigation } from "@/config/dashboard-navigation"
 
 import { AcademySwitcher } from "./academy-switcher"
 import { NavMenu } from "./nav-menu"
 import { NavUser } from "./nav-user"
 
 export function AppSidebar({ className, ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession()
+  const navigation = getDashboardNavigation(session?.user.role)
+
   return (
     <Sidebar collapsible="icon" className={cn("border-outline-variant", className)} {...props}>
       <SidebarHeader className="mb-8 px-4 pt-6 pb-0 group-data-[collapsible=icon]:px-2">
@@ -24,7 +28,7 @@ export function AppSidebar({ className, ...props }: React.ComponentProps<typeof 
       </SidebarHeader>
 
       <SidebarContent className="gap-6 px-4 pb-4 group-data-[collapsible=icon]:px-2">
-        {dashboardNavigation.map((group) => (
+        {navigation.map((group) => (
           <NavMenu key={group.title} {...group} />
         ))}
       </SidebarContent>

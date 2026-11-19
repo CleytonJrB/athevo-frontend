@@ -20,6 +20,7 @@ import { AcademySwitcherItem } from "./academy-switcher-item"
 interface AcademySwitcherMenuProps {
   academies: AcademyListItem[]
   activeAcademyId?: string
+  isStudent: boolean
   switchingId: string | null
   onClose: () => void
   onSelect: (academy: AcademyListItem) => void
@@ -28,6 +29,7 @@ interface AcademySwitcherMenuProps {
 export function AcademySwitcherMenu({
   academies,
   activeAcademyId,
+  isStudent,
   switchingId,
   onClose,
   onSelect,
@@ -55,7 +57,7 @@ export function AcademySwitcherMenu({
             autoFocus
             aria-label="Buscar workspace ou academia"
             className="h-9 border-outline-variant/40 bg-surface-container-lowest/70 pr-12 pl-8 text-xs text-on-surface shadow-none placeholder:text-on-surface-variant focus-visible:border-primary-container focus-visible:ring-2 focus-visible:ring-primary-container/20"
-            placeholder="Buscar academia ou workspace..."
+            placeholder={isStudent ? "Buscar academia..." : "Buscar academia ou workspace..."}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             onKeyDown={(event) => {
@@ -75,7 +77,7 @@ export function AcademySwitcherMenu({
         )}
       >
         <DropdownMenuLabel className="flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-on-surface-variant uppercase">
-          <span>Workspaces e unidades</span>
+          <span>{isStudent ? "Academias vinculadas" : "Workspaces e unidades"}</span>
           <span className="font-mono text-[10px] font-normal text-on-surface-variant/60 normal-case">
             {formatAcademyCount(filteredAcademies.length)}
           </span>
@@ -99,7 +101,7 @@ export function AcademySwitcherMenu({
         )}
       </DropdownMenuGroup>
 
-      <AcademySwitcherActions onAction={onClose} />
+      {!isStudent && <AcademySwitcherActions onAction={onClose} />}
     </DropdownMenuContent>
   )
 }
