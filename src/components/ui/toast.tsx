@@ -117,7 +117,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
     <ToastPrimitive.Content
       data-slot="toast-content"
       className={cn(
-        "flex h-full items-start gap-3.5 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+        "flex h-full items-center gap-3.5 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
         className,
       )}
       {...props}
@@ -157,7 +157,7 @@ function ToastAction({
     <ToastPrimitive.Action
       data-slot="toast-action"
       render={render}
-      className={cn("mt-0.5 shrink-0 text-xs font-semibold", className)}
+      className={cn("shrink-0 text-xs font-semibold", className)}
       {...props}
     />
   )
@@ -175,7 +175,7 @@ function ToastClose({
       aria-label="Fechar notificação"
       render={render}
       className={cn(
-        "relative -mt-1 -mr-1 shrink-0 text-on-surface-variant after:absolute after:-inset-2 after:content-[''] hover:text-on-surface",
+        "relative -mr-1 shrink-0 text-on-surface-variant after:absolute after:-inset-2 after:content-[''] hover:text-on-surface",
         className,
       )}
       {...props}
@@ -219,7 +219,7 @@ function ToastIcon({ type }: { type: AthevoToastType | undefined }) {
     <span
       data-slot="toast-icon"
       className={cn(
-        "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-high text-on-surface-variant [&_svg]:size-4",
+        "flex size-8 shrink-0 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-high text-on-surface-variant [&_svg]:size-4",
         type && toastIconStyles[type],
       )}
     >
@@ -291,9 +291,9 @@ function ToastList() {
                       </span>
                     ))}
                   </ToastDescription>
-                ) : (
+                ) : toastItem.description ? (
                   <ToastDescription />
-                )}
+                ) : null}
               </div>
               <ToastAction
                 render={
