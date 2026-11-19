@@ -231,7 +231,7 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                       {canReceive && (
                         <DropdownMenuItem onClick={() => onAction("discount", invoice)} className="text-primary-container">
                           <Percent aria-hidden="true" />
-                          Aplicar desconto
+                          Programar desconto
                         </DropdownMenuItem>
                       )}
                       {canManage && !canceled && (

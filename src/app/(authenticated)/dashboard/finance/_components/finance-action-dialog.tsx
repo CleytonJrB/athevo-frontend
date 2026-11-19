@@ -57,9 +57,9 @@ const dialogCopy: Record<FinanceAction, { title: string; description: string; su
     submit: "Confirmar pagamento",
   },
   discount: {
-    title: "Cadastrar desconto",
-    description: "O desconto será considerado nas competências elegíveis da matrícula.",
-    submit: "Cadastrar desconto",
+    title: "Programar desconto",
+    description: "O desconto será considerado nas próximas competências elegíveis da matrícula.",
+    submit: "Programar desconto",
   },
   cancel: {
     title: "Cancelar fatura",
@@ -208,7 +208,7 @@ export function FinanceActionDialog({
                   <textarea name="reason" rows={3} className={textareaClassName} required placeholder="Ex.: campanha de retenção" />
                 </Field>
                 <p className="rounded-md border border-primary-container/20 bg-primary-container/5 p-2.5 text-[11px] leading-relaxed text-on-surface-variant">
-                  O desconto não altera retroativamente esta fatura. Ele será aplicado na geração da competência elegível.
+                  O desconto não altera esta fatura já emitida. Ele será aplicado a partir da próxima competência elegível.
                 </p>
               </>
             )}

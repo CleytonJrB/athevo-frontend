@@ -1,4 +1,7 @@
+"use client"
+
 import { CalendarDays, History, WalletCards } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,7 +13,10 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { listStudentDiscounts } from "@/services/student-finance-service"
 import {
+  StudentDiscountRecurrence,
+  StudentDiscountType,
   StudentInvoiceStatus,
   type StudentInvoice,
 } from "@/types/student-finance"
@@ -44,6 +50,13 @@ export function InvoiceDetailsSheet({
   onAction,
   onOpenChange,
 }: InvoiceDetailsSheetProps) {
+  const discountsQuery = useQuery({
+    queryKey: ["student-finance", "discounts", invoice?.enrollmentId],
+    queryFn: ({ signal }) => listStudentDiscounts(invoice!.enrollmentId, signal),
+    enabled: open && Boolean(invoice?.enrollmentId),
+    meta: { errorTitle: "Não foi possível carregar os descontos" },
+  })
+
   if (!invoice) return null
 
   const canReceive =
@@ -84,6 +97,54 @@ export function InvoiceDetailsSheet({
             <span className="mt-3 inline-flex rounded border border-border bg-surface-container px-2 py-1 text-xs text-on-surface">
               {invoice.planName}
             </span>
+          </section>
+
+          <section className="rounded-lg border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+                Descontos programados
+              </p>
+              <span className="text-[10px] text-on-surface-variant">
+                {discountsQuery.data?.length ?? 0} registro(s)
+              </span>
+            </div>
+
+            {discountsQuery.isPending ? (
+              <p className="mt-3 text-xs text-on-surface-variant">Carregando descontos...</p>
+            ) : discountsQuery.isError ? (
+              <button
+                type="button"
+                onClick={() => discountsQuery.refetch()}
+                className="mt-3 text-xs font-medium text-primary-container hover:underline"
+              >
+                Tentar carregar novamente
+              </button>
+            ) : discountsQuery.data?.length ? (
+              <ul className="mt-3 space-y-2">
+                {discountsQuery.data.map((discount) => (
+                  <li key={discount.id} className="rounded-md border border-border bg-surface px-3 py-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium text-on-surface">{discount.name}</p>
+                        <p className="mt-0.5 text-[11px] text-on-surface-variant">
+                          A partir de {formatDate(discount.validFrom)} · {getDiscountRecurrence(discount.recurrence)}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-mono text-xs font-semibold text-primary-container">
+                          {formatDiscountValue(discount.type, discount.value, discount.currency)}
+                        </p>
+                        <p className={cn("text-[10px]", discount.active ? "text-success" : "text-on-surface-variant")}>
+                          {getDiscountStatus(discount)}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-xs text-on-surface-variant">Nenhum desconto cadastrado para esta matrícula.</p>
+            )}
           </section>
 
           <section className="rounded-lg border border-border bg-card p-4">
@@ -148,7 +209,7 @@ export function InvoiceDetailsSheet({
               onClick={() => runAction("discount")}
               className="h-10 w-full border-border bg-transparent text-xs font-semibold text-primary-container hover:bg-surface-container"
             >
-              Cadastrar desconto
+              Programar desconto
             </Button>
             <Button
               type="button"
@@ -207,4 +268,36 @@ function getDueLabel(invoice: StudentInvoice) {
 function formatCompetence(value: string) {
   const [year, month] = value.split("-")
   return `${month}/${year}`
+}
+
+function formatDate(value: string) {
+  return dateFormatter.format(new Date(`${value}T00:00:00Z`))
+}
+
+function formatDiscountValue(
+  type: StudentDiscountType,
+  value: number,
+  currency?: string,
+) {
+  if (type === StudentDiscountType.Percentage) return `${value}%`
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: currency ?? "BRL",
+  }).format(value)
+}
+
+function getDiscountRecurrence(recurrence: StudentDiscountRecurrence) {
+  return recurrence === StudentDiscountRecurrence.Recurring ? "recorrente" : "uma competência"
+}
+
+function getDiscountStatus(discount: {
+  active: boolean
+  recurrence: StudentDiscountRecurrence
+  usedAt?: string
+  validUntil?: string
+}) {
+  if (!discount.active) return "Inativo"
+  if (discount.usedAt && discount.recurrence === StudentDiscountRecurrence.OneTime) return "Utilizado"
+  if (discount.validUntil && discount.validUntil < new Date().toISOString().slice(0, 10)) return "Expirado"
+  return "Ativo"
 }

@@ -114,6 +114,8 @@ export function FinanceDashboard() {
       }
 
       if (nextAction === "discount") {
+        const validFrom = getNextCompetence(invoice.competence)
+
         return createStudentDiscount({
           enrollmentId: invoice.enrollmentId,
           name: payload.reason ?? "Desconto administrativo",
@@ -126,10 +128,10 @@ export function FinanceDashboard() {
               ? undefined
               : invoice.currency,
           priority: payload.priority ?? 100,
-          validFrom: invoice.competence,
+          validFrom,
           validUntil:
             payload.discountRecurrence === StudentDiscountRecurrence.OneTime
-              ? invoice.competence
+              ? validFrom
               : undefined,
         })
       }
@@ -143,7 +145,7 @@ export function FinanceDashboard() {
     onSuccess: async (result, variables) => {
       closeActionDialog()
       await queryClient.invalidateQueries({
-        queryKey: ["student-finance", session?.user.tenantId],
+        queryKey: ["student-finance"],
       })
 
       if (variables.action === "generate" && result && "created" in result) {
@@ -160,7 +162,12 @@ export function FinanceDashboard() {
         discount: "Desconto cadastrado",
         cancel: "Fatura cancelada",
       }
-      appToast.success(messages[variables.action as Exclude<FinanceAction, "generate">])
+      appToast.success(
+        messages[variables.action as Exclude<FinanceAction, "generate">],
+        variables.action === "discount"
+          ? "O desconto será aplicado na próxima fatura elegível; faturas já emitidas não são alteradas."
+          : undefined,
+      )
     },
   })
 
@@ -278,6 +285,11 @@ export function FinanceDashboard() {
       />
     </div>
   )
+}
+
+function getNextCompetence(competence: string) {
+  const [year, month] = competence.split("-").map(Number)
+  return new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 10)
 }
 
 function FinanceMessage({

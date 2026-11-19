@@ -75,6 +75,22 @@ export interface StudentFinanceOperationResult {
   id: string
 }
 
+export interface StudentDiscount {
+  id: string
+  enrollmentId: string
+  studentTenantUserId: string
+  name: string
+  type: StudentDiscountType
+  recurrence: StudentDiscountRecurrence
+  value: number
+  currency?: string
+  priority: number
+  validFrom: string
+  validUntil?: string
+  usedAt?: string
+  active: boolean
+}
+
 export interface ListStudentInvoicesParams {
   page: number
   pageSize: number

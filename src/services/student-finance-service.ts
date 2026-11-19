@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { createIdempotencyKey } from "@/lib/idempotency-key"
 import type {
   CreateStudentDiscountInput,
   GenerateStudentInvoicesResult,
@@ -7,6 +8,7 @@ import type {
   RegisterStudentPaymentInput,
   StudentFinanceOperationResult,
   StudentFinanceSettings,
+  StudentDiscount,
   StudentInvoice,
   StudentInvoicePage,
 } from "@/types/student-finance"
@@ -70,7 +72,7 @@ export async function registerStudentPayment(
   const response = await axios.post<StudentFinanceOperationResult>(
     `/api/student-finance/invoices/${invoiceId}/payments`,
     input,
-    { headers: { "Idempotency-Key": crypto.randomUUID() } },
+    { headers: { "Idempotency-Key": createIdempotencyKey() } },
   )
   return response.data
 }
@@ -79,6 +81,17 @@ export async function createStudentDiscount(input: CreateStudentDiscountInput) {
   const response = await axios.post<StudentFinanceOperationResult>(
     "/api/student-finance/discounts",
     input,
+  )
+  return response.data
+}
+
+export async function listStudentDiscounts(
+  enrollmentId: string,
+  signal?: AbortSignal,
+) {
+  const response = await axios.get<StudentDiscount[]>(
+    "/api/student-finance/discounts",
+    { params: { enrollmentId }, signal },
   )
   return response.data
 }
