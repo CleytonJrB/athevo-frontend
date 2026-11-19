@@ -150,8 +150,8 @@ export function AuthenticatedHeader({
         </div>
         {roleLabel && (
           <div
-            aria-label={`Cargo na academia ${session.user.tenantName ?? "selecionada"}: ${roleLabel}`}
-            title={session.user.tenantName ?? undefined}
+            aria-label={`Cargo na academia ${session?.user.tenantName ?? "selecionada"}: ${roleLabel}`}
+            title={session?.user.tenantName ?? undefined}
             className="hidden h-8 items-center gap-2 rounded-full border border-emerald-800/50 bg-emerald-950/40 px-3 text-xs font-medium whitespace-nowrap text-emerald-400 lg:flex"
           >
             <span
