@@ -41,6 +41,18 @@ export async function listStudentInvoices(
   } satisfies StudentInvoicePage
 }
 
+export async function listMyStudentInvoices(
+  params: ListStudentInvoicesParams,
+  signal?: AbortSignal,
+) {
+  const response = await axios.get<StudentInvoice[]>(
+    "/api/student-finance/me/invoices",
+    { params, signal },
+  )
+
+  return response.data
+}
+
 export async function getStudentFinanceSettings(signal?: AbortSignal) {
   const response = await axios.get<StudentFinanceSettings>(
     "/api/student-finance/settings",
