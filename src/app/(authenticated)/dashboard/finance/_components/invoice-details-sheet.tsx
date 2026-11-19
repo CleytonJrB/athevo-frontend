@@ -10,14 +10,18 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import {
+  StudentInvoiceStatus,
+  type StudentInvoice,
+} from "@/types/student-finance"
 
 import type { FinanceInvoiceAction } from "./finance-action-dialog"
-import type { Invoice } from "../_data/invoices"
 
 interface InvoiceDetailsSheetProps {
-  invoice: Invoice | null
+  canManage: boolean
+  invoice: StudentInvoice | null
   open: boolean
-  onAction: (action: FinanceInvoiceAction, invoice: Invoice) => void
+  onAction: (action: FinanceInvoiceAction, invoice: StudentInvoice) => void
   onOpenChange: (open: boolean) => void
 }
 
@@ -34,6 +38,7 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 })
 
 export function InvoiceDetailsSheet({
+  canManage,
   invoice,
   open,
   onAction,
@@ -41,9 +46,10 @@ export function InvoiceDetailsSheet({
 }: InvoiceDetailsSheetProps) {
   if (!invoice) return null
 
-  const canReceive = invoice.openAmount > 0 && invoice.status !== "canceled"
-  const canReverse = invoice.paidAmount > 0 && invoice.status !== "canceled"
-  const actionCount = Number(canReverse) + Number(canReceive) * 2
+  const canReceive =
+    canManage &&
+    invoice.balance > 0 &&
+    invoice.status !== StudentInvoiceStatus.Cancelled
 
   function runAction(action: FinanceInvoiceAction) {
     onOpenChange(false)
@@ -56,9 +62,9 @@ export function InvoiceDetailsSheet({
         <SheetHeader className="border-b border-border p-5 pr-12">
           <SheetTitle className="flex items-center gap-2 text-base font-semibold">
             <WalletCards aria-hidden="true" className="size-5 text-primary-container" />
-            Fatura #{invoice.id.replace("invoice-", "FAT-2026-")}
+            Fatura #{invoice.id.slice(0, 8)}
           </SheetTitle>
-          <SheetDescription>Competência {invoice.competence}</SheetDescription>
+          <SheetDescription>Competência {formatCompetence(invoice.competence)}</SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 pb-5">
@@ -69,10 +75,10 @@ export function InvoiceDetailsSheet({
             <div className="mt-3 flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-semibold text-on-surface">{invoice.studentName}</p>
-                <p className="truncate text-xs text-on-surface-variant">{invoice.studentEmail}</p>
+                <p className="truncate text-xs text-on-surface-variant">Aluno da academia</p>
               </div>
               <span className="shrink-0 font-mono text-xs text-on-surface-variant">
-                #{invoice.enrollment}
+                #{invoice.studentTenantUserId.slice(0, 8)}
               </span>
             </div>
             <span className="mt-3 inline-flex rounded border border-border bg-surface-container px-2 py-1 text-xs text-on-surface">
@@ -85,16 +91,17 @@ export function InvoiceDetailsSheet({
               Composição do valor
             </p>
             <dl className="mt-3 space-y-2 text-sm">
-              <ValueRow label="Valor faturado" value={currencyFormatter.format(invoice.billedAmount)} />
-              {invoice.discountAmount ? (
+              <ValueRow label="Valor bruto" value={currencyFormatter.format(invoice.grossAmount)} />
+              {invoice.discountAmount > 0 && (
                 <ValueRow label="Desconto" value={`− ${currencyFormatter.format(invoice.discountAmount)}`} />
-              ) : null}
+              )}
+              <ValueRow label="Valor líquido" value={currencyFormatter.format(invoice.netAmount)} />
               <ValueRow label="Total pago" value={currencyFormatter.format(invoice.paidAmount)} valueClassName="text-success" />
               <div className="border-t border-border pt-2">
                 <ValueRow
                   label="Saldo em aberto"
-                  value={currencyFormatter.format(invoice.openAmount)}
-                  valueClassName={invoice.openAmount > 0 ? "text-primary-container" : "text-on-surface"}
+                  value={currencyFormatter.format(invoice.balance)}
+                  valueClassName={invoice.balance > 0 ? "text-primary-container" : "text-on-surface"}
                 />
               </div>
             </dl>
@@ -107,75 +114,51 @@ export function InvoiceDetailsSheet({
               <p className="mt-1 font-mono text-sm font-semibold text-on-surface">
                 {dateFormatter.format(new Date(`${invoice.dueDate}T00:00:00Z`))}
               </p>
-              <p className="text-[11px] text-on-surface-variant">{invoice.dueLabel}</p>
+              <p className="text-[11px] text-on-surface-variant">{getDueLabel(invoice)}</p>
             </section>
             <section className="rounded-lg border border-border bg-card p-3">
               <History aria-hidden="true" className="size-4 text-on-surface-variant" />
               <p className="mt-2 text-[10px] tracking-wider text-on-surface-variant uppercase">Status</p>
-              <p className="mt-1 text-sm font-semibold text-primary-container">
-                {getStatusLabel(invoice.status)}
-              </p>
-              <p className="text-[11px] text-on-surface-variant">Atualizado no histórico</p>
+              <p className="mt-1 text-sm font-semibold text-primary-container">{getStatusLabel(invoice)}</p>
+              <p className="text-[11px] text-on-surface-variant">Situação atual da fatura</p>
             </section>
           </div>
 
           <section className="rounded-lg border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
-                Histórico de eventos
-              </p>
-              <span className="text-[10px] text-on-surface-variant">Auditoria</span>
-            </div>
+            <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+              Resumo da fatura
+            </p>
             <ol className="mt-4 space-y-4 border-l border-border pl-4">
               {invoice.paidAmount > 0 && (
-                <HistoryItem title="Pagamento registrado" description={`${currencyFormatter.format(invoice.paidAmount)} conciliado na fatura.`} tone="success" />
+                <HistoryItem title="Total recebido" description={`${currencyFormatter.format(invoice.paidAmount)} registrado na fatura.`} tone="success" />
               )}
-              {invoice.discountAmount ? (
-                <HistoryItem title="Desconto aplicado" description={`${currencyFormatter.format(invoice.discountAmount)} concedido pela gestão.`} tone="primary" />
-              ) : null}
-              <HistoryItem title="Fatura gerada" description={`Cobrança da competência ${invoice.competence}.`} />
+              {invoice.discountAmount > 0 && (
+                <HistoryItem title="Desconto calculado" description={`${currencyFormatter.format(invoice.discountAmount)} considerado na geração.`} tone="primary" />
+              )}
+              <HistoryItem title="Fatura gerada" description={`Cobrança da competência ${formatCompetence(invoice.competence)}.`} />
             </ol>
           </section>
         </div>
 
-        <SheetFooter
-          className={cn(
-            "grid gap-2 border-t border-border bg-card p-3",
-            actionCount === 1 && "grid-cols-1",
-            actionCount === 2 && "grid-cols-2",
-            actionCount === 3 && "grid-cols-3",
-          )}
-        >
-          {canReverse && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => runAction("reversal")}
-              className="h-11 w-full whitespace-normal border-border bg-transparent px-1.5 text-center text-[11px] leading-tight font-semibold text-primary-container hover:bg-surface-container"
-            >
-              Reverter Pagamento
-            </Button>
-          )}
-          {canReceive && (
+        {canReceive && (
+          <SheetFooter className="grid grid-cols-2 gap-2 border-t border-border bg-card p-3">
             <Button
               type="button"
               variant="outline"
               onClick={() => runAction("discount")}
-              className="h-11 w-full whitespace-normal border-border bg-transparent px-1.5 text-center text-[11px] leading-tight font-semibold text-primary-container hover:bg-surface-container"
+              className="h-10 w-full border-border bg-transparent text-xs font-semibold text-primary-container hover:bg-surface-container"
             >
-              Aplicar Desconto
+              Cadastrar desconto
             </Button>
-          )}
-          {canReceive && (
             <Button
               type="button"
               onClick={() => runAction("payment")}
-              className="h-11 w-full whitespace-normal bg-primary-container px-1.5 text-center text-[11px] leading-tight font-semibold text-black hover:bg-primary-container"
+              className="h-10 w-full bg-primary-container text-xs font-semibold text-black hover:bg-primary-container"
             >
-              Registrar Pagamento
+              Registrar pagamento
             </Button>
-          )}
-        </SheetFooter>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   )
@@ -195,9 +178,12 @@ function HistoryItem({ title, description, tone = "default" }: { title: string; 
     <li className="relative">
       <span
         aria-hidden="true"
-        className={`absolute top-1.5 -left-[1.2rem] size-2 rounded-full ${
-          tone === "success" ? "bg-success" : tone === "primary" ? "bg-primary-container" : "bg-on-surface-variant"
-        }`}
+        className={cn(
+          "absolute top-1.5 -left-[1.2rem] size-2 rounded-full",
+          tone === "success" && "bg-success",
+          tone === "primary" && "bg-primary-container",
+          tone === "default" && "bg-on-surface-variant",
+        )}
       />
       <p className="text-xs font-medium text-on-surface">{title}</p>
       <p className="mt-0.5 text-[11px] text-on-surface-variant">{description}</p>
@@ -205,13 +191,20 @@ function HistoryItem({ title, description, tone = "default" }: { title: string; 
   )
 }
 
-function getStatusLabel(status: Invoice["status"]) {
-  return {
-    open: "Em aberto",
-    partial: "Parcialmente paga",
-    paid: "Paga",
-    overdue: "Vencida",
-    canceled: "Cancelada",
-  }[status]
+function getStatusLabel(invoice: StudentInvoice) {
+  if (invoice.status === StudentInvoiceStatus.Cancelled) return "Cancelada"
+  if (invoice.status === StudentInvoiceStatus.Paid) return "Paga"
+  if (invoice.status === StudentInvoiceStatus.PartiallyPaid) return "Parcialmente paga"
+  return invoice.overdue ? "Vencida" : "Em aberto"
 }
 
+function getDueLabel(invoice: StudentInvoice) {
+  if (invoice.status === StudentInvoiceStatus.Cancelled) return "Cancelada"
+  if (invoice.status === StudentInvoiceStatus.Paid) return "Liquidada"
+  return invoice.overdue ? "Vencida" : "A vencer"
+}
+
+function formatCompetence(value: string) {
+  const [year, month] = value.split("-")
+  return `${month}/${year}`
+}

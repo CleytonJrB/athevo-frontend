@@ -3,7 +3,6 @@ import {
   Eye,
   MoreVertical,
   Percent,
-  RotateCcw,
   WalletCards,
 } from "lucide-react"
 
@@ -16,14 +15,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import {
+  StudentInvoiceStatus,
+  type StudentInvoice,
+} from "@/types/student-finance"
 
 import type { FinanceInvoiceAction } from "./finance-action-dialog"
-import type { Invoice, InvoiceStatus } from "../_data/invoices"
 
 interface InvoicesTableProps {
-  invoices: Invoice[]
-  onAction: (action: FinanceInvoiceAction, invoice: Invoice) => void
-  onView: (invoice: Invoice) => void
+  canManage: boolean
+  invoices: StudentInvoice[]
+  onAction: (action: FinanceInvoiceAction, invoice: StudentInvoice) => void
+  onView: (invoice: StudentInvoice) => void
 }
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -38,8 +41,10 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "UTC",
 })
 
+type InvoicePresentationStatus = "open" | "partial" | "paid" | "overdue" | "canceled"
+
 const statusPresentation: Record<
-  InvoiceStatus,
+  InvoicePresentationStatus,
   { label: string; className: string }
 > = {
   open: {
@@ -74,7 +79,7 @@ function getInitials(name: string) {
     .join("")
 }
 
-export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps) {
+export function InvoicesTable({ canManage, invoices, onAction, onView }: InvoicesTableProps) {
   return (
     <div className="overflow-x-auto">
       <table id="finance-invoices-table" className="w-full min-w-260 border-collapse text-left">
@@ -105,17 +110,17 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
 
         <tbody className="divide-y divide-border text-sm">
           {invoices.map((invoice) => {
-            const status = statusPresentation[invoice.status]
-            const canceled = invoice.status === "canceled"
-            const canReceive = invoice.openAmount > 0 && !canceled
-            const canReverse = invoice.paidAmount > 0 && !canceled
+            const presentationStatus = getPresentationStatus(invoice)
+            const status = statusPresentation[presentationStatus]
+            const canceled = invoice.status === StudentInvoiceStatus.Cancelled
+            const canReceive = canManage && invoice.balance > 0 && !canceled
 
             return (
               <tr
                 key={invoice.id}
                 className={cn(
                   "group cursor-pointer transition-colors hover:bg-card/80 focus-within:bg-card/80",
-                  invoice.status === "overdue" && "bg-rose-950/10",
+                  invoice.overdue && "bg-rose-950/10",
                   canceled && "opacity-60",
                 )}
                 onClick={() => onView(invoice)}
@@ -125,9 +130,9 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
                     <span
                       className={cn(
                         "flex size-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
-                        invoice.status === "overdue"
+                        invoice.overdue
                           ? "border-rose-800/40 bg-rose-900/30 text-rose-300"
-                          : invoice.status === "paid"
+                          : invoice.status === StudentInvoiceStatus.Paid
                             ? "border-success/20 bg-success/10 text-success"
                             : "border-border bg-surface-container text-primary-container",
                       )}
@@ -140,37 +145,37 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
                           {invoice.studentName}
                         </p>
                         <span className="shrink-0 font-mono text-[10px] text-on-surface-variant">
-                          #{invoice.enrollment}
+                          #{invoice.studentTenantUserId.slice(0, 8)}
                         </span>
                       </div>
                       <p className="truncate text-xs text-on-surface-variant">
-                        {invoice.studentEmail}
+                        Identificação do aluno
                       </p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3.5">
                   <p className="font-medium text-on-surface">{invoice.planName}</p>
-                  <p className="font-mono text-xs text-on-surface-variant">{invoice.competence}</p>
+                  <p className="font-mono text-xs text-on-surface-variant">{formatCompetence(invoice.competence)}</p>
                 </td>
                 <td className="px-4 py-3.5">
                   <p
                     className={cn(
                       "font-mono text-on-surface",
-                      invoice.status === "overdue" && "font-medium text-rose-400",
+                      invoice.overdue && "font-medium text-rose-400",
                     )}
                   >
                     {dateFormatter.format(new Date(`${invoice.dueDate}T00:00:00Z`))}
                   </p>
-                  <p className={cn("text-[11px] text-on-surface-variant", invoice.status === "overdue" && "text-rose-400")}>
-                    {invoice.dueLabel}
+                  <p className={cn("text-[11px] text-on-surface-variant", invoice.overdue && "text-rose-400")}>
+                    {getDueLabel(invoice)}
                   </p>
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono">
                   <p className="font-medium text-on-surface">
-                    {currencyFormatter.format(invoice.billedAmount)}
+                    {currencyFormatter.format(invoice.netAmount)}
                   </p>
-                  {invoice.paidAmount > 0 && invoice.status === "partial" && (
+                  {invoice.paidAmount > 0 && invoice.status === StudentInvoiceStatus.PartiallyPaid && (
                     <p className="text-[11px] text-success">
                       Pago: {currencyFormatter.format(invoice.paidAmount)}
                     </p>
@@ -184,12 +189,12 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
                 <td className="px-4 py-3.5 text-right font-mono font-semibold">
                   <span
                     className={cn(
-                      invoice.status === "overdue" && "text-rose-400",
-                      invoice.status === "partial" && "text-primary-container",
-                      invoice.openAmount === 0 && "font-normal text-on-surface-variant",
+                      invoice.overdue && "text-rose-400",
+                      invoice.status === StudentInvoiceStatus.PartiallyPaid && "text-primary-container",
+                      invoice.balance === 0 && "font-normal text-on-surface-variant",
                     )}
                   >
-                    {currencyFormatter.format(invoice.openAmount)}
+                    {currencyFormatter.format(invoice.balance)}
                   </span>
                 </td>
                 <td className="px-4 py-3.5 text-center">
@@ -229,13 +234,7 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
                           Aplicar desconto
                         </DropdownMenuItem>
                       )}
-                      {canReverse && (
-                        <DropdownMenuItem onClick={() => onAction("reversal", invoice)} className="text-amber-400">
-                          <RotateCcw aria-hidden="true" />
-                          Reverter pagamento
-                        </DropdownMenuItem>
-                      )}
-                      {!canceled && (
+                      {canManage && !canceled && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem variant="destructive" onClick={() => onAction("cancel", invoice)}>
@@ -254,5 +253,24 @@ export function InvoicesTable({ invoices, onAction, onView }: InvoicesTableProps
       </table>
     </div>
   )
+}
+
+function getPresentationStatus(invoice: StudentInvoice): InvoicePresentationStatus {
+  if (invoice.status === StudentInvoiceStatus.Cancelled) return "canceled"
+  if (invoice.status === StudentInvoiceStatus.Paid) return "paid"
+  if (invoice.status === StudentInvoiceStatus.PartiallyPaid) return "partial"
+  return invoice.overdue ? "overdue" : "open"
+}
+
+function getDueLabel(invoice: StudentInvoice) {
+  if (invoice.status === StudentInvoiceStatus.Cancelled) return "Cancelada"
+  if (invoice.status === StudentInvoiceStatus.Paid) return "Liquidada"
+  if (invoice.overdue) return "Vencida"
+  return "A vencer"
+}
+
+function formatCompetence(value: string) {
+  const [year, month] = value.split("-")
+  return `${month}/${year}`
 }
 

@@ -4,11 +4,15 @@ import { AuthenticatedCommonTitle } from "@/components/layout/authenticated-comm
 import { Button } from "@/components/ui/button"
 
 interface FinancePageHeaderProps {
+  canGenerate: boolean
+  canOpenSettings: boolean
   onGenerateInvoices: () => void
   onOpenSettings: () => void
 }
 
 export function FinancePageHeader({
+  canGenerate,
+  canOpenSettings,
   onGenerateInvoices,
   onOpenSettings,
 }: FinancePageHeaderProps) {
@@ -25,23 +29,27 @@ export function FinancePageHeader({
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onOpenSettings}
-          className="h-10 border-border bg-transparent px-4 text-on-surface hover:bg-surface-container"
-        >
-          <Settings2 aria-hidden="true" />
-          Configurações
-        </Button>
-        <Button
-          type="button"
-          onClick={onGenerateInvoices}
-          className="h-10 rounded-md bg-primary-container px-5 font-bold text-black hover:bg-primary-container hover:shadow-[0_0_20px_rgba(250,204,21,0.35)]"
-        >
-          <Plus aria-hidden="true" />
-          Gerar faturas
-        </Button>
+        {canOpenSettings && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onOpenSettings}
+            className="h-10 border-border bg-transparent px-4 text-on-surface hover:bg-surface-container"
+          >
+            <Settings2 aria-hidden="true" />
+            Configurações
+          </Button>
+        )}
+        {canGenerate && (
+          <Button
+            type="button"
+            onClick={onGenerateInvoices}
+            className="h-10 rounded-md bg-primary-container px-5 font-bold text-black hover:bg-primary-container hover:shadow-[0_0_20px_rgba(250,204,21,0.35)]"
+          >
+            <Plus aria-hidden="true" />
+            Gerar faturas
+          </Button>
+        )}
       </div>
     </div>
   )

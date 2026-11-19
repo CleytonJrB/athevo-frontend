@@ -29,6 +29,17 @@ const studentDeletionRoles = new Set<TenantRole>([
   TenantRole.Administrator,
 ])
 
+const studentFinanceManagerRoles = new Set<TenantRole>([
+  TenantRole.Owner,
+  TenantRole.Administrator,
+  TenantRole.Manager,
+])
+
+const studentFinanceSettingsRoles = new Set<TenantRole>([
+  TenantRole.Owner,
+  TenantRole.Administrator,
+])
+
 export function isTenantRole(role: string): role is TenantRole {
   return Object.values(TenantRole).some((candidate) => candidate === role)
 }
@@ -39,6 +50,14 @@ export function canManageStudentTrainers(role?: string | null) {
 
 export function canDeleteStudents(role?: string | null) {
   return Boolean(role && isTenantRole(role) && studentDeletionRoles.has(role))
+}
+
+export function canManageStudentFinance(role?: string | null) {
+  return Boolean(role && isTenantRole(role) && studentFinanceManagerRoles.has(role))
+}
+
+export function canManageStudentFinanceSettings(role?: string | null) {
+  return Boolean(role && isTenantRole(role) && studentFinanceSettingsRoles.has(role))
 }
 
 export function getTenantRoleLabel(role: string) {

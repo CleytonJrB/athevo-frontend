@@ -1,62 +1,66 @@
-import { CircleAlert, ReceiptText, TrendingUp, WalletCards } from "lucide-react"
+import { CircleAlert, ReceiptText, WalletCards } from "lucide-react"
 
-const summary = [
-  {
-    label: "Receita prevista",
-    value: "R$ 54.890,00",
-    detail: "+8,2% vs. mês anterior",
-    icon: TrendingUp,
-    valueClassName: "text-on-surface",
-    detailClassName: "text-success",
-  },
-  {
-    label: "Total recebido",
-    value: "R$ 38.450,00",
-    detail: "70,05% quitado · 182 faturas",
-    icon: ReceiptText,
-    valueClassName: "text-success",
-    detailClassName: "text-on-surface-variant",
-  },
-  {
-    label: "Saldo em aberto",
-    value: "R$ 11.240,00",
-    detail: "48 faturas a vencer",
-    icon: WalletCards,
-    valueClassName: "text-primary-container",
-    detailClassName: "text-on-surface-variant",
-  },
-  {
-    label: "Inadimplência",
-    value: "19 alunos",
-    detail: "R$ 5.200,00 vencido · 4,4%",
-    icon: CircleAlert,
-    valueClassName: "text-rose-400",
-    detailClassName: "text-rose-400",
-  },
-]
+import type { StudentInvoice } from "@/types/student-finance"
 
-export function FinanceSummary() {
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+})
+
+export function FinanceSummary({ invoices }: { invoices: StudentInvoice[] }) {
+  const billed = invoices.reduce((total, invoice) => total + invoice.netAmount, 0)
+  const received = invoices.reduce((total, invoice) => total + invoice.paidAmount, 0)
+  const open = invoices.reduce((total, invoice) => total + invoice.balance, 0)
+  const overdue = invoices.filter((invoice) => invoice.overdue)
+  const overdueAmount = overdue.reduce((total, invoice) => total + invoice.balance, 0)
+
+  const summary = [
+    {
+      label: "Faturado nesta página",
+      value: currencyFormatter.format(billed),
+      detail: `${invoices.length} fatura(s) carregada(s)`,
+      icon: ReceiptText,
+      valueClassName: "text-on-surface",
+      detailClassName: "text-on-surface-variant",
+    },
+    {
+      label: "Recebido nesta página",
+      value: currencyFormatter.format(received),
+      detail: "Pagamentos registrados",
+      icon: ReceiptText,
+      valueClassName: "text-success",
+      detailClassName: "text-on-surface-variant",
+    },
+    {
+      label: "Em aberto nesta página",
+      value: currencyFormatter.format(open),
+      detail: "Saldo das faturas carregadas",
+      icon: WalletCards,
+      valueClassName: "text-primary-container",
+      detailClassName: "text-on-surface-variant",
+    },
+    {
+      label: "Vencido nesta página",
+      value: currencyFormatter.format(overdueAmount),
+      detail: `${overdue.length} fatura(s) vencida(s)`,
+      icon: CircleAlert,
+      valueClassName: "text-rose-400",
+      detailClassName: "text-rose-400",
+    },
+  ]
+
   return (
-    <section
-      aria-label="Resumo financeiro"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-    >
+    <section aria-label="Resumo financeiro da página" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {summary.map((item) => {
         const Icon = item.icon
-
         return (
-          <article
-            key={item.label}
-            className="rounded-xl border border-border bg-surface p-4 transition-colors hover:border-outline-variant"
-          >
+          <article key={item.label} className="rounded-xl border border-border bg-surface p-4 transition-colors hover:border-outline-variant">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
                   {item.label}
                 </p>
-                <p
-                  className={`mt-2 truncate font-mono text-2xl font-bold tracking-tight ${item.valueClassName}`}
-                >
+                <p className={`mt-2 truncate font-mono text-2xl font-bold ${item.valueClassName}`}>
                   {item.value}
                 </p>
               </div>
@@ -71,4 +75,3 @@ export function FinanceSummary() {
     </section>
   )
 }
-
