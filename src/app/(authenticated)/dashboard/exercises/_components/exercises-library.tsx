@@ -6,7 +6,11 @@ import { useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { DataPagination } from "@/components/ui/data-pagination"
-import { listExercises } from "@/services/exercises-service"
+import { TenantRole } from "@/lib/tenant-role"
+import {
+  ExerciseServiceError,
+  listExercises,
+} from "@/services/exercises-service"
 import type { ExerciseScope } from "@/types/exercise"
 
 import { ExerciseCard, ExerciseCardSkeleton } from "./exercise-card"
@@ -54,9 +58,7 @@ export function ExercisesLibrary() {
       ),
     enabled: sessionStatus === "authenticated" && Boolean(session?.user.tenantId),
     placeholderData: keepPreviousData,
-    meta: {
-      errorTitle: "Não foi possível carregar os exercícios",
-    },
+    meta: { skipGlobalErrorToast: true },
   })
 
   function handleScopeChange(nextScope: ExerciseScope) {
@@ -75,6 +77,10 @@ export function ExercisesLibrary() {
   const total = exercisesQuery.data?.totalCount ?? 0
   const isPending = sessionStatus === "loading" || exercisesQuery.isPending
   const hasActiveFilters = scope !== "all" || debouncedSearch.length > 0
+  const isAccessDenied =
+    exercisesQuery.error instanceof ExerciseServiceError &&
+    exercisesQuery.error.status === 403
+  const isOwner = session?.user.role === TenantRole.Owner
 
   return (
     <>
@@ -91,19 +97,29 @@ export function ExercisesLibrary() {
         {exercisesQuery.isError ? (
           <div className="flex min-h-72 flex-col items-center justify-center rounded-lg border border-border bg-surface-glass px-6 text-center">
             <p className="font-medium text-on-surface">
-              Não foi possível carregar os exercícios
+              {isAccessDenied
+                ? isOwner
+                  ? "Biblioteca temporariamente bloqueada"
+                  : "Biblioteca de exercícios indisponível"
+                : "Não foi possível carregar os exercícios"}
             </p>
             <p className="mt-1 max-w-md text-sm text-on-surface-variant">
-              Verifique sua conexão ou tente novamente em alguns instantes.
+              {isAccessDenied
+                ? isOwner
+                  ? "O período gratuito terminou ou o plano da academia precisa ser renovado. Entre em contato com o suporte para liberar a biblioteca."
+                  : "Peça ao proprietário da academia para verificar o plano da Athevo."
+                : "Verifique sua conexão ou tente novamente em alguns instantes."}
             </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-5 border-outline-variant bg-transparent text-on-surface hover:bg-surface-container-high"
-              onClick={() => exercisesQuery.refetch()}
-            >
-              Tentar novamente
-            </Button>
+            {!isAccessDenied && (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-5 border-outline-variant bg-transparent text-on-surface hover:bg-surface-container-high"
+                onClick={() => exercisesQuery.refetch()}
+              >
+                Tentar novamente
+              </Button>
+            )}
           </div>
         ) : !isPending && total === 0 ? (
           <ExerciseEmptyList

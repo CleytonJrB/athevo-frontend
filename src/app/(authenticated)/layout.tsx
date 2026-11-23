@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth/config"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { AuthenticatedFooter } from "@/components/layout/authenticated-footer"
 import { AuthenticatedHeader } from "@/components/layout/authenticated-header"
+import { SubscriptionAccessBanner } from "@/components/layout/subscription-access-banner"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default async function AuthenticatedLayout({
       <AppSidebar />
 
       <SidebarInset>
+        <SubscriptionAccessBanner />
         <AuthenticatedHeader />
 
         {children}

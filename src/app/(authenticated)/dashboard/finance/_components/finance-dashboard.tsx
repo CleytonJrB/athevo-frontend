@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { isAxiosError } from "axios"
 import { ChevronLeft, ChevronRight, ReceiptText } from "lucide-react"
 import { useSession } from "next-auth/react"
 
@@ -11,6 +12,7 @@ import {
   canManageStudentFinanceSettings,
 } from "@/lib/tenant-role"
 import { appToast } from "@/lib/toast"
+import { getCurrentSubscription } from "@/services/subscription-service"
 import {
   cancelStudentInvoice,
   createStudentDiscount,
@@ -73,14 +75,22 @@ export function FinanceDashboard() {
       ),
     enabled: queryEnabled,
     placeholderData: keepPreviousData,
-    meta: { errorTitle: "Não foi possível carregar as faturas" },
+    meta: { skipGlobalErrorToast: true },
+  })
+
+  const subscriptionQuery = useQuery({
+    queryKey: ["subscription", session?.user.tenantId, "current"],
+    queryFn: ({ signal }) => getCurrentSubscription(signal),
+    enabled: queryEnabled,
+    meta: { skipGlobalErrorToast: true },
+    staleTime: 60_000,
   })
 
   const settingsQuery = useQuery({
     queryKey: ["student-finance", session?.user.tenantId, "settings"],
     queryFn: ({ signal }) => getStudentFinanceSettings(signal),
-    enabled: queryEnabled,
-    meta: { errorTitle: "Não foi possível carregar as configurações" },
+    enabled: queryEnabled && canManageSettings,
+    meta: { skipGlobalErrorToast: true },
   })
 
   const financeMutation = useMutation({
@@ -176,6 +186,13 @@ export function FinanceDashboard() {
     invoices.find((invoice) => invoice.id === selectedInvoiceId) ?? null
   const actionInvoice =
     invoices.find((invoice) => invoice.id === actionInvoiceId) ?? null
+  const isAccessDenied =
+    (isAxiosError(invoicesQuery.error) &&
+      invoicesQuery.error.response?.status === 403) ||
+    (isAxiosError(settingsQuery.error) &&
+      settingsQuery.error.response?.status === 403)
+  const hasOperationalAccess = subscriptionQuery.data?.hasAccess === true
+  const canWriteFinance = hasOperationalAccess && !isAccessDenied
 
   function openInvoiceAction(
     nextAction: FinanceInvoiceAction,
@@ -203,22 +220,29 @@ export function FinanceDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <FinancePageHeader
-        canGenerate={canManage}
-        canOpenSettings={canManageSettings}
+        canGenerate={canManage && canWriteFinance}
+        canOpenSettings={canManageSettings && canWriteFinance}
         onGenerateInvoices={() => openGlobalAction("generate")}
         onOpenSettings={() => openGlobalAction("settings")}
       />
 
-      <FinanceSummary invoices={invoices} />
+      {!isAccessDenied && <FinanceSummary invoices={invoices} />}
 
-      <FinanceFilters status={status} onStatusChange={handleStatusChange} />
+      {!isAccessDenied && (
+        <FinanceFilters status={status} onStatusChange={handleStatusChange} />
+      )}
 
       <section
         aria-label="Faturas dos alunos"
         aria-busy={invoicesQuery.isFetching}
         className="overflow-hidden rounded-xl border border-border bg-surface shadow-2xl shadow-black/30"
       >
-        {invoicesQuery.isError ? (
+        {isAccessDenied ? (
+          <FinanceMessage
+            title="Financeiro temporariamente bloqueado"
+            description="O período gratuito terminou ou o plano da academia precisa ser renovado. Entre em contato com o suporte para liberar o acesso."
+          />
+        ) : invoicesQuery.isError ? (
           <FinanceMessage
             title="Não foi possível carregar as faturas"
             description="Verifique sua conexão e tente novamente."
@@ -242,7 +266,7 @@ export function FinanceDashboard() {
         ) : (
           <>
             <InvoicesTable
-              canManage={canManage}
+              canManage={canManage && canWriteFinance}
               invoices={invoices}
               onView={(invoice) => setSelectedInvoiceId(invoice.id)}
               onAction={openInvoiceAction}
@@ -258,7 +282,7 @@ export function FinanceDashboard() {
       </section>
 
       <InvoiceDetailsSheet
-        canManage={canManage}
+        canManage={canManage && canWriteFinance}
         invoice={selectedInvoice}
         open={selectedInvoice !== null}
         onOpenChange={(open) => {

@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react"
+import { isAxiosError } from "axios"
 
 import { toast, type AthevoToastData, type AthevoToastType } from "@/components/ui/toast"
 
@@ -52,6 +53,23 @@ export function getErrorMessage(
   error: unknown,
   fallback = defaultErrorMessage,
 ) {
+  if (isAxiosError<{ detail?: string; title?: string }>(error)) {
+    if (error.response?.status === 401) {
+      return "Sua sessão expirou. Entre novamente para continuar."
+    }
+
+    if (error.response?.status === 403) {
+      return "Não foi possível acessar este conteúdo. Se precisar, fale com o responsável pela academia."
+    }
+
+    if (!error.response) {
+      return "Não foi possível conectar ao servidor. Verifique sua conexão."
+    }
+
+    const problem = error.response.data
+    return problem?.detail ?? problem?.title ?? fallback
+  }
+
   if (!(error instanceof Error) || !error.message.trim()) return fallback
 
   if (
