@@ -20,7 +20,7 @@ export function AcademySwitcherTrigger({
         <Dumbbell className="size-4" />
       </div>
       <div className="grid min-w-0 flex-1 text-left leading-normal group-data-[collapsible=icon]:hidden">
-        <span className="mb-0.5 truncate text-[11px] font-medium leading-none text-primary-container">
+        <span className="mb-0.5 truncate text-xs font-medium leading-none text-primary-container">
           {isStudent ? "Portal do Aluno" : "Workspace ativo"}
         </span>
         <span className="truncate text-sm font-medium text-on-surface">

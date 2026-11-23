@@ -82,7 +82,7 @@ export function InvoiceDetailsSheet({
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 pb-5">
           <section className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+            <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
               Dados do aluno
             </p>
             <div className="mt-3 flex items-start justify-between gap-3">
@@ -101,10 +101,10 @@ export function InvoiceDetailsSheet({
 
           <section className="rounded-lg border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+              <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
                 Descontos programados
               </p>
-              <span className="text-[10px] text-on-surface-variant">
+              <span className="text-xs text-on-surface-variant">
                 {discountsQuery.data?.length ?? 0} registro(s)
               </span>
             </div>
@@ -126,7 +126,7 @@ export function InvoiceDetailsSheet({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-xs font-medium text-on-surface">{discount.name}</p>
-                        <p className="mt-0.5 text-[11px] text-on-surface-variant">
+                        <p className="mt-0.5 text-xs text-on-surface-variant">
                           A partir de {formatDate(discount.validFrom)} · {getDiscountRecurrence(discount.recurrence)}
                         </p>
                       </div>
@@ -134,7 +134,7 @@ export function InvoiceDetailsSheet({
                         <p className="font-mono text-xs font-semibold text-primary-container">
                           {formatDiscountValue(discount.type, discount.value, discount.currency)}
                         </p>
-                        <p className={cn("text-[10px]", discount.active ? "text-success" : "text-on-surface-variant")}>
+                        <p className={cn("text-xs", discount.active ? "text-success" : "text-on-surface-variant")}>
                           {getDiscountStatus(discount)}
                         </p>
                       </div>
@@ -148,7 +148,7 @@ export function InvoiceDetailsSheet({
           </section>
 
           <section className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+            <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
               Composição do valor
             </p>
             <dl className="mt-3 space-y-2 text-sm">
@@ -171,22 +171,22 @@ export function InvoiceDetailsSheet({
           <div className="grid grid-cols-2 gap-3">
             <section className="rounded-lg border border-border bg-card p-3">
               <CalendarDays aria-hidden="true" className="size-4 text-on-surface-variant" />
-              <p className="mt-2 text-[10px] tracking-wider text-on-surface-variant uppercase">Vencimento</p>
+              <p className="mt-2 text-xs tracking-wider text-on-surface-variant uppercase">Vencimento</p>
               <p className="mt-1 font-mono text-sm font-semibold text-on-surface">
                 {dateFormatter.format(new Date(`${invoice.dueDate}T00:00:00Z`))}
               </p>
-              <p className="text-[11px] text-on-surface-variant">{getDueLabel(invoice)}</p>
+              <p className="text-xs text-on-surface-variant">{getDueLabel(invoice)}</p>
             </section>
             <section className="rounded-lg border border-border bg-card p-3">
               <History aria-hidden="true" className="size-4 text-on-surface-variant" />
-              <p className="mt-2 text-[10px] tracking-wider text-on-surface-variant uppercase">Status</p>
+              <p className="mt-2 text-xs tracking-wider text-on-surface-variant uppercase">Status</p>
               <p className="mt-1 text-sm font-semibold text-primary-container">{getStatusLabel(invoice)}</p>
-              <p className="text-[11px] text-on-surface-variant">Situação atual da fatura</p>
+              <p className="text-xs text-on-surface-variant">Situação atual da fatura</p>
             </section>
           </div>
 
           <section className="rounded-lg border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+            <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
               Resumo da fatura
             </p>
             <ol className="mt-4 space-y-4 border-l border-border pl-4">
@@ -247,7 +247,7 @@ function HistoryItem({ title, description, tone = "default" }: { title: string; 
         )}
       />
       <p className="text-xs font-medium text-on-surface">{title}</p>
-      <p className="mt-0.5 text-[11px] text-on-surface-variant">{description}</p>
+      <p className="mt-0.5 text-xs text-on-surface-variant">{description}</p>
     </li>
   )
 }

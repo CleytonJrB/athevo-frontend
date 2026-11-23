@@ -137,7 +137,7 @@ export function MyFinanceHistory({
           <div className="hidden overflow-hidden rounded-xl border border-outline-variant bg-surface-container-low md:block">
             <table className="w-full border-collapse text-left text-xs">
               <thead>
-                <tr className="border-b border-outline-variant bg-surface-container-high/50 text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+                <tr className="border-b border-outline-variant bg-surface-container-high/50 text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
                   <th className="px-5 py-3">Competência</th>
                   <th className="px-5 py-3">Vencimento</th>
                   <th className="px-5 py-3">Valor</th>
@@ -156,7 +156,7 @@ export function MyFinanceHistory({
                       <p className="font-medium text-on-surface transition-colors group-hover:text-primary-container">
                         {formatCompetence(invoice.competence)}
                       </p>
-                      <p className="mt-0.5 font-mono text-[11px] text-on-surface-variant">
+                      <p className="mt-0.5 font-mono text-xs text-on-surface-variant">
                         #{invoice.id.slice(0, 8)} • {invoice.planName}
                       </p>
                     </td>
@@ -168,7 +168,7 @@ export function MyFinanceHistory({
                         {currencyFormatter.format(invoice.netAmount)}
                       </p>
                       {invoice.discountAmount > 0 && (
-                        <p className="mt-0.5 font-mono text-[10px] text-emerald-400">
+                        <p className="mt-0.5 font-mono text-xs text-emerald-400">
                           − {currencyFormatter.format(invoice.discountAmount)} desc.
                         </p>
                       )}
@@ -208,7 +208,7 @@ export function MyFinanceHistory({
                     <span className="block text-xs font-semibold text-on-surface">
                       {formatCompetence(invoice.competence)}
                     </span>
-                    <span className="mt-0.5 block font-mono text-[10px] text-on-surface-variant">
+                    <span className="mt-0.5 block font-mono text-xs text-on-surface-variant">
                       #{invoice.id.slice(0, 8)} • {invoice.planName}
                     </span>
                   </span>

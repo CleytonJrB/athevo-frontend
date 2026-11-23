@@ -87,7 +87,7 @@ export function MyFinanceDashboard() {
             <section className="flex flex-col justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-low p-4 sm:flex-row sm:items-center">
               <div className="min-w-0 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded border border-primary-container/30 bg-primary-container/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-primary-container">
+                  <span className="rounded border border-primary-container/30 bg-primary-container/10 px-2 py-0.5 font-mono text-xs font-semibold text-primary-container">
                     Próxima Fatura
                   </span>
                   <span className="truncate font-mono text-xs text-on-surface-variant">
@@ -103,7 +103,7 @@ export function MyFinanceDashboard() {
                       <span className="font-mono text-xs text-on-surface-variant line-through">
                         {currencyFormatter.format(nextInvoice.grossAmount)}
                       </span>
-                      <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] text-emerald-400">
+                      <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-xs text-emerald-400">
                         − {currencyFormatter.format(nextInvoice.discountAmount)} desconto
                       </span>
                     </>
@@ -116,7 +116,7 @@ export function MyFinanceDashboard() {
 
               <div className="flex shrink-0 items-center gap-3 sm:border-l sm:border-outline-variant sm:pl-4">
                 <div className="hidden text-right lg:block">
-                  <span className="block font-mono text-[10px] text-on-surface-variant">
+                  <span className="block font-mono text-xs text-on-surface-variant">
                     Academia ativa
                   </span>
                   <span className="block max-w-44 truncate text-xs text-on-surface-variant">

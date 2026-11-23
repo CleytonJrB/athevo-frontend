@@ -56,12 +56,12 @@ export function AcademySwitcherItem({
             {academy.name}
           </span>
           {active && (
-            <span className="shrink-0 rounded bg-primary-container/20 px-1.5 py-0.5 text-[9px] font-medium text-primary-container">
+            <span className="shrink-0 rounded bg-primary-container/20 px-1.5 py-0.5 text-xs font-medium text-primary-container">
               Atual
             </span>
           )}
         </div>
-        <span className="truncate text-[11px] text-on-surface-variant">
+        <span className="truncate text-xs text-on-surface-variant">
           {summary}
         </span>
       </div>

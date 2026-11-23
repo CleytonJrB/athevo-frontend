@@ -64,7 +64,7 @@ export function AcademySwitcherMenu({
               if (event.key !== "Escape") event.stopPropagation()
             }}
           />
-          <kbd className="pointer-events-none absolute right-2 rounded border border-outline-variant/40 bg-surface-container-high px-1.5 py-0.5 font-mono text-[9px] text-on-surface-variant">
+          <kbd className="pointer-events-none absolute right-2 rounded border border-outline-variant/40 bg-surface-container-high px-1.5 py-0.5 font-mono text-xs text-on-surface-variant">
             ESC
           </kbd>
         </div>
@@ -76,9 +76,9 @@ export function AcademySwitcherMenu({
           switchingId && "cursor-progress"
         )}
       >
-        <DropdownMenuLabel className="flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-on-surface-variant uppercase">
+        <DropdownMenuLabel className="flex items-center justify-between px-2 py-1 text-xs font-semibold text-on-surface-variant uppercase">
           <span>{isStudent ? "Academias vinculadas" : "Workspaces e unidades"}</span>
-          <span className="font-mono text-[10px] font-normal text-on-surface-variant/60 normal-case">
+          <span className="font-mono text-xs font-normal text-on-surface-variant/60 normal-case">
             {formatAcademyCount(filteredAcademies.length)}
           </span>
         </DropdownMenuLabel>

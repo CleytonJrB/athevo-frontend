@@ -57,7 +57,7 @@ export function FinanceSummary({ invoices }: { invoices: StudentInvoice[] }) {
           <article key={item.label} className="rounded-xl border border-border bg-surface p-4 transition-colors hover:border-outline-variant">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase">
+                <p className="text-xs font-semibold tracking-wider text-on-surface-variant uppercase">
                   {item.label}
                 </p>
                 <p className={`mt-2 truncate font-mono text-2xl font-bold ${item.valueClassName}`}>

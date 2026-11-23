@@ -98,7 +98,7 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                 key={label}
                 scope="col"
                 className={cn(
-                  "px-4 py-3 text-[11px] font-semibold tracking-wider text-on-surface-variant uppercase",
+                  "px-4 py-3 text-xs font-semibold tracking-wider text-on-surface-variant uppercase",
                   alignment,
                 )}
               >
@@ -144,7 +144,7 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                         <p className={cn("truncate font-medium text-on-surface", canceled && "line-through")}>
                           {invoice.studentName}
                         </p>
-                        <span className="shrink-0 font-mono text-[10px] text-on-surface-variant">
+                        <span className="shrink-0 font-mono text-xs text-on-surface-variant">
                           #{invoice.studentTenantUserId.slice(0, 8)}
                         </span>
                       </div>
@@ -167,7 +167,7 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                   >
                     {dateFormatter.format(new Date(`${invoice.dueDate}T00:00:00Z`))}
                   </p>
-                  <p className={cn("text-[11px] text-on-surface-variant", invoice.overdue && "text-rose-400")}>
+                  <p className={cn("text-xs text-on-surface-variant", invoice.overdue && "text-rose-400")}>
                     {getDueLabel(invoice)}
                   </p>
                 </td>
@@ -176,12 +176,12 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                     {currencyFormatter.format(invoice.netAmount)}
                   </p>
                   {invoice.paidAmount > 0 && invoice.status === StudentInvoiceStatus.PartiallyPaid && (
-                    <p className="text-[11px] text-success">
+                    <p className="text-xs text-success">
                       Pago: {currencyFormatter.format(invoice.paidAmount)}
                     </p>
                   )}
                   {invoice.discountAmount ? (
-                    <p className="text-[11px] text-on-surface-variant">
+                    <p className="text-xs text-on-surface-variant">
                       Desc.: {currencyFormatter.format(invoice.discountAmount)}
                     </p>
                   ) : null}
@@ -198,7 +198,7 @@ export function InvoicesTable({ canManage, invoices, onAction, onView }: Invoice
                   </span>
                 </td>
                 <td className="px-4 py-3.5 text-center">
-                  <span className={cn("inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium", status.className)}>
+                  <span className={cn("inline-flex rounded-full border px-2 py-0.5 text-xs font-medium", status.className)}>
                     {status.label}
                   </span>
                 </td>

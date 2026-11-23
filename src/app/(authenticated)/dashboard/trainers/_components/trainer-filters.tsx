@@ -46,7 +46,7 @@ export function TrainerFilters({
               {filter.label}
               <span
                 className={cn(
-                  "rounded-full px-1.5 py-0.5 font-mono text-[0.65rem] leading-none",
+                  "rounded-full px-1.5 py-0.5 font-mono text-xs leading-none",
                   isActive
                     ? "bg-on-primary-container/10"
                     : "bg-surface-container-highest",

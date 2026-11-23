@@ -107,7 +107,7 @@ function SummaryCard({
     <article className="flex min-h-36 flex-col justify-between rounded-xl border border-outline-variant bg-surface-container-low p-3.5 transition-colors hover:border-on-surface-variant/40">
       <div>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-[11px] font-medium tracking-wider text-on-surface-variant uppercase">
+          <span className="text-xs font-medium tracking-wider text-on-surface-variant uppercase">
             {label}
           </span>
           <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${toneClasses[badgeTone]}`}>

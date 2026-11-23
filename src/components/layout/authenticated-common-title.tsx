@@ -9,12 +9,12 @@ export function AuthenticatedCommonTitle({
 }: IAuthenticatedCommonTitle) {
   return (
     <div className="flex flex-col items-start gap-1">
-      <h1 className="text-4xl text-[#E2E2E2] font-bold">
+      <h1 className="text-2xl font-bold tracking-tight text-on-surface md:text-3xl">
         {title}
       </h1>
 
       {subTitle &&
-        <p className="text-base text-[#D1C6AB]">
+        <p className="text-sm text-on-surface-variant">
           {subTitle}
         </p>
       }

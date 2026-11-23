@@ -628,13 +628,13 @@ export function StudentCreateForm() {
                             <span className="relative flex min-h-16 flex-col items-center justify-center overflow-hidden rounded-lg border border-outline-variant px-2 py-1 text-xs font-medium text-on-surface-variant transition-colors hover:bg-surface-container-high peer-focus-visible:border-primary-container peer-focus-visible:ring-2 peer-focus-visible:ring-primary-container/30 peer-data-checked:border-primary-container peer-data-checked:bg-primary-container/10 peer-data-checked:text-primary-container sm:text-sm">
                               <span>{plan.name}</span>
                               {price && (
-                                <span className="text-[10px] font-normal text-on-surface-variant">
+                                <span className="text-xs font-normal text-on-surface-variant">
                                   {formatCurrency(price.amount, price.currency)}
                                   /{price.billingInterval === "yearly" ? "ano" : "mês"}
                                 </span>
                               )}
                               {monthlyEquivalent !== null && (
-                                <span className="text-[10px] font-normal text-on-surface-variant">
+                                <span className="text-xs font-normal text-on-surface-variant">
                                   equivale a {formatCurrency(monthlyEquivalent, price.currency)}/mês
                                 </span>
                               )}

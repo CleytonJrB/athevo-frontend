@@ -137,7 +137,7 @@ export function FinanceActionDialog({
                   <p className="font-mono text-sm font-semibold text-primary-container">
                     {currencyFormatter.format(invoice.balance)}
                   </p>
-                  <p className="text-[10px] text-on-surface-variant uppercase">Saldo aberto</p>
+                  <p className="text-xs text-on-surface-variant uppercase">Saldo aberto</p>
                 </div>
               </div>
             )}
@@ -176,7 +176,7 @@ export function FinanceActionDialog({
                 <Field label="Referência do comprovante (opcional)">
                   <Input name="receiptReference" placeholder="Ex.: Recibo #401" />
                 </Field>
-                <p className="rounded-md border border-border bg-card p-2.5 text-[11px] leading-relaxed text-on-surface-variant">
+                <p className="rounded-md border border-border bg-card p-2.5 text-xs leading-relaxed text-on-surface-variant">
                   Este registro é administrativo e não movimenta valores em gateways online.
                 </p>
               </>
@@ -207,7 +207,7 @@ export function FinanceActionDialog({
                 <Field label="Nome ou motivo do desconto">
                   <textarea name="reason" rows={3} className={textareaClassName} required placeholder="Ex.: campanha de retenção" />
                 </Field>
-                <p className="rounded-md border border-primary-container/20 bg-primary-container/5 p-2.5 text-[11px] leading-relaxed text-on-surface-variant">
+                <p className="rounded-md border border-primary-container/20 bg-primary-container/5 p-2.5 text-xs leading-relaxed text-on-surface-variant">
                   O desconto não altera esta fatura já emitida. Ele será aplicado a partir da próxima competência elegível.
                 </p>
               </>
