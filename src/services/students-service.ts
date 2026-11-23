@@ -104,11 +104,32 @@ export async function uploadStudentPhoto(tenantUserId: string, file: File) {
     { byteSize: file.size, contentType: file.type },
   )
 
-  await axios.put(authorization.data.uploadUrl, file, {
-    headers: authorization.data.headers,
-    maxBodyLength: 5 * 1024 * 1024,
-    withCredentials: false,
-  })
+  const uploadUrl = new URL(authorization.data.uploadUrl)
+  const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"])
+  const storageUsesLoopback = loopbackHosts.has(uploadUrl.hostname)
+  const pageUsesLoopback = loopbackHosts.has(window.location.hostname)
+  const requiresServerFallback =
+    (window.location.protocol === "https:" && uploadUrl.protocol === "http:") ||
+    (storageUsesLoopback && !pageUsesLoopback)
+
+  try {
+    if (requiresServerFallback) throw new Error("Mixed-content upload")
+
+    await axios.put(authorization.data.uploadUrl, file, {
+      headers: authorization.data.headers,
+      maxBodyLength: 5 * 1024 * 1024,
+      withCredentials: false,
+    })
+  } catch {
+    const formData = new FormData()
+    formData.append("photo", file)
+
+    const fallback = await axios.post<StudentPhotoResult>(
+      `/api/students/${tenantUserId}/photo/upload-fallback`,
+      formData,
+    )
+    return fallback.data
+  }
 
   const confirmation = await axios.post<StudentPhotoResult>(
     `/api/students/${tenantUserId}/photo/uploads/${authorization.data.assetId}/confirm`,

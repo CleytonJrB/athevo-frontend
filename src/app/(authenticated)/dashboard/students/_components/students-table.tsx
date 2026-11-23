@@ -1,4 +1,4 @@
-import { Edit3, Eye, LoaderCircle, MoreVertical, Send, Trash2 } from "lucide-react"
+import { Camera, Edit3, Eye, LoaderCircle, MoreVertical, Send, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,8 +20,10 @@ interface StudentsTableProps {
   onDelete?: (student: Student) => void
   onEdit: (student: Student) => void
   onResendInvitation: (student: Student) => void
+  onUploadPhoto: (student: Student) => void
   onView: (student: Student) => void
   resendingStudentId?: string | null
+  uploadingPhotoStudentId?: string | null
 }
 
 const statusPresentation: Record<
@@ -90,8 +92,10 @@ export function StudentsTable({
   onDelete,
   onEdit,
   onResendInvitation,
+  onUploadPhoto,
   onView,
   resendingStudentId = null,
+  uploadingPhotoStudentId = null,
 }: StudentsTableProps) {
   return (
     <div className="overflow-x-auto">
@@ -133,6 +137,8 @@ export function StudentsTable({
                     : "inactive"
               ]
               const isResendingInvitation = resendingStudentId === student.tenantUserId
+              const isUploadingPhoto =
+                uploadingPhotoStudentId === student.tenantUserId
 
               return (
                 <tr
@@ -223,6 +229,24 @@ export function StudentsTable({
                           >
                             <Edit3 aria-hidden="true" />
                             Editar cadastro
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="gap-2 py-1.5"
+                            disabled={isUploadingPhoto}
+                            onClick={() => onUploadPhoto(student)}
+                          >
+                            {isUploadingPhoto ? (
+                              <LoaderCircle aria-hidden="true" className="animate-spin" />
+                            ) : (
+                              <Camera aria-hidden="true" />
+                            )}
+                            {isUploadingPhoto
+                              ? "Enviando foto..."
+                              : student.hasPhoto
+                                ? "Alterar foto"
+                                : student.hasPendingPhoto
+                                  ? "Reenviar foto"
+                                  : "Enviar foto"}
                           </DropdownMenuItem>
                           {student.canResendInvitation && (
                             <DropdownMenuItem

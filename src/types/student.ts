@@ -8,6 +8,7 @@ export interface Student {
   id: string
   tenantUserId: string
   hasPhoto: boolean
+  hasPendingPhoto: boolean
   lastCheckInAt: string | null
   name: string
   planName: string | null

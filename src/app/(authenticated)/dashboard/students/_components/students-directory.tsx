@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Search } from "lucide-react"
 import { useSession } from "next-auth/react"
@@ -14,6 +14,7 @@ import {
   deleteStudent,
   listStudents,
   resendStudentInvitation,
+  uploadStudentPhoto,
 } from "@/services/students-service"
 import type { Student } from "@/types/student"
 
@@ -38,6 +39,8 @@ export function StudentsDirectory() {
   const [page, setPage] = useState(1)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [studentPendingDeletion, setStudentPendingDeletion] = useState<Student | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const photoStudentRef = useRef<Student | null>(null)
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -109,6 +112,28 @@ export function StudentsDirectory() {
     },
   })
 
+  const photoUploadMutation = useMutation({
+    mutationFn: ({ file, student }: { file: File; student: Student }) =>
+      uploadStudentPhoto(student.tenantUserId, file),
+    meta: {
+      errorFallback: "Não foi possível enviar a foto. Tente novamente.",
+      errorTitle: "Erro ao enviar foto",
+    },
+    onSuccess: async (_result, { student }) => {
+      appToast.success(
+        student.hasPhoto ? "Foto atualizada" : "Foto adicionada",
+        `A foto de ${student.name} já está disponível no cadastro.`,
+      )
+      await queryClient.invalidateQueries({
+        queryKey: ["students", session?.user.tenantId],
+      })
+    },
+    onSettled: () => {
+      photoStudentRef.current = null
+      if (photoInputRef.current) photoInputRef.current.value = ""
+    },
+  })
+
   function handleStatusChange(nextStatus: StudentStatusFilter) {
     setStatus(nextStatus)
     setPage(1)
@@ -120,6 +145,40 @@ export function StudentsDirectory() {
 
   function viewStudent(student: Student) {
     setSelectedStudentId(student.tenantUserId)
+  }
+
+  function chooseStudentPhoto(student: Student) {
+    if (photoUploadMutation.isPending) return
+    photoStudentRef.current = student
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ""
+      photoInputRef.current.click()
+    }
+  }
+
+  function handleStudentPhotoChange(file?: File) {
+    const student = photoStudentRef.current
+    if (!file || !student) return
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      appToast.warning(
+        "Formato não suportado",
+        "Selecione uma imagem JPG, PNG ou WebP.",
+      )
+      photoStudentRef.current = null
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      appToast.warning(
+        "Imagem muito grande",
+        "A foto deve ter no máximo 5 MB.",
+      )
+      photoStudentRef.current = null
+      return
+    }
+
+    photoUploadMutation.mutate({ file, student })
   }
 
   function clearFilters() {
@@ -136,6 +195,15 @@ export function StudentsDirectory() {
 
   return (
     <div className="flex flex-col gap-6">
+      <input
+        ref={photoInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        aria-label="Selecionar foto do aluno"
+        onChange={(event) => handleStudentPhotoChange(event.target.files?.[0])}
+      />
+
       <StudentsPageHeader
         filtersVisible={filtersVisible}
         status={status}
@@ -204,11 +272,17 @@ export function StudentsDirectory() {
                   : undefined
               }
               onEdit={(student) => showPendingAction("A edição", student)}
+              onUploadPhoto={chooseStudentPhoto}
               onResendInvitation={(student) => resendInvitationMutation.mutate(student)}
               onView={viewStudent}
               resendingStudentId={
                 resendInvitationMutation.isPending
                   ? resendInvitationMutation.variables?.tenantUserId
+                  : null
+              }
+              uploadingPhotoStudentId={
+                photoUploadMutation.isPending
+                  ? photoUploadMutation.variables?.student.tenantUserId
                   : null
               }
             />
